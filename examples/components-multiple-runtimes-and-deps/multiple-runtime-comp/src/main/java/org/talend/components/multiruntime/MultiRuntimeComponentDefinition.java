@@ -74,7 +74,7 @@ public class MultiRuntimeComponentDefinition extends AbstractComponentDefinition
         case VERSION_0_1:
             try {
                 result = new JarRuntimeInfo(
-                        new URL("mvn:org.talend.components/test-multiple-runtime-comp-runtime-v01/0.1.0-SNAPSHOT"),
+                        new URL("mvn:org.talend.components/test-multiple-runtime-comp-runtime-v01"),
                         DependenciesReader.computeDependenciesFilePath("org.talend.components",
                                 "test-multiple-runtime-comp-runtime-v01"),
                         "org.talend.multiruntime.MultiRuntimeComponentSource");
@@ -85,7 +85,7 @@ public class MultiRuntimeComponentDefinition extends AbstractComponentDefinition
         case VERSION_0_2:
             try {
                 result = new JarRuntimeInfo(
-                        new URL("mvn:org.talend.components/test-multiple-runtime-comp-runtime-v02/0.1.0-SNAPSHOT"),
+                        new URL("mvn:org.talend.components/test-multiple-runtime-comp-runtime-v02"),
                         DependenciesReader.computeDependenciesFilePath("org.talend.components",
                                 "test-multiple-runtime-comp-runtime-v02"),
                         "org.talend.multiruntime.MultiRuntimeComponentSource");

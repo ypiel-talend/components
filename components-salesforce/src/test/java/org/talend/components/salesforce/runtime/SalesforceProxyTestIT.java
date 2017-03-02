@@ -18,6 +18,7 @@ import java.net.PasswordAuthentication;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.littleshoot.proxy.HttpProxyServer;
 import org.littleshoot.proxy.ProxyAuthenticator;
@@ -26,8 +27,6 @@ import org.talend.components.api.component.runtime.Reader;
 import org.talend.components.api.component.runtime.Source;
 import org.talend.components.api.component.runtime.SourceOrSink;
 import org.talend.components.salesforce.SalesforceConnectionProperties;
-import org.talend.components.salesforce.runtime.SalesforceSource;
-import org.talend.components.salesforce.runtime.SalesforceSourceOrSink;
 import org.talend.components.salesforce.test.SalesforceRuntimeTestUtil;
 import org.talend.components.salesforce.test.SalesforceTestBase;
 import org.talend.components.salesforce.tsalesforceconnection.TSalesforceConnectionDefinition;
@@ -76,6 +75,7 @@ public class SalesforceProxyTestIT extends SalesforceTestBase {
         server = null;
     }
 
+    @Ignore
     @Test
     public void testProxy() {
         TSalesforceConnectionDefinition definition = (TSalesforceConnectionDefinition) getComponentService()
@@ -93,6 +93,7 @@ public class SalesforceProxyTestIT extends SalesforceTestBase {
         Assert.assertEquals(ValidationResult.Result.OK, vr.getStatus());
     }
 
+    @Ignore
     @Test
     public void testProxyWithBulkQuery() {
         TSalesforceInputDefinition definition = (TSalesforceInputDefinition) getComponentService()
