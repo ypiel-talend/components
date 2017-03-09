@@ -59,8 +59,6 @@ public class SalesforceSourceOrSink implements SourceOrSink {
 
     private transient static final Logger LOG = LoggerFactory.getLogger(SalesforceSourceOrSink.class);
 
-    protected static final String API_VERSION = "34.0";
-
     protected SalesforceProvideConnectionProperties properties;
 
     protected static final String KEY_CONNECTION = "Connection";
@@ -144,7 +142,11 @@ public class SalesforceSourceOrSink implements SourceOrSink {
          * it's '/async/versionNumber'
          */
         String soapEndpoint = config.getServiceEndpoint();
-        String restEndpoint = soapEndpoint.substring(0, soapEndpoint.indexOf("Soap/")) + "async/" + API_VERSION;
+        // Service endpoint should be like this:
+        // https://ap1.salesforce.com/services/Soap/u/37.0/00D90000000eSq3
+        String apiVersion = soapEndpoint.substring(soapEndpoint.lastIndexOf("/services/Soap/u/") + 17);
+        apiVersion = apiVersion.substring(0, apiVersion.indexOf("/"));
+        String restEndpoint = soapEndpoint.substring(0, soapEndpoint.indexOf("Soap/")) + "async/" + apiVersion;
         bulkConfig.setRestEndpoint(restEndpoint);
         // This should only be false when doing debugging.
         bulkConfig.setCompression(connProps.needCompression.getValue());
@@ -159,6 +161,7 @@ public class SalesforceSourceOrSink implements SourceOrSink {
 
     /**
      * Create a connection with specified connector configuration
+     * 
      * @param config connector configuration with endpoint/userId/password
      * @param openNewSession whether need to create new session
      * @return PartnerConnection object with correct session id
@@ -173,7 +176,8 @@ public class SalesforceSourceOrSink implements SourceOrSink {
             String endpoint = connProps.endpoint.getStringValue();
             endpoint = StringUtils.strip(endpoint, "\"");
             if (SalesforceConnectionProperties.LoginType.OAuth.equals(connProps.loginType.getValue())) {
-                SalesforceOAuthConnection oauthConnection = new SalesforceOAuthConnection(connProps.oauth, endpoint, API_VERSION);
+                SalesforceOAuthConnection oauthConnection = new SalesforceOAuthConnection(connProps.oauth, endpoint,
+                        connProps.apiVersion.getValue());
                 oauthConnection.login(config);
             } else {
                 config.setAuthEndpoint(endpoint);
@@ -184,7 +188,7 @@ public class SalesforceSourceOrSink implements SourceOrSink {
             this.sessionId = config.getSessionId();
             this.serviceEndPoint = config.getServiceEndpoint();
             if (this.sessionId != null && this.serviceEndPoint != null) {
-                //update session file with current sessionId/serviceEndPoint
+                // update session file with current sessionId/serviceEndPoint
                 setupSessionProperties(connection);
             }
         }
