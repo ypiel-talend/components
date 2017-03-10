@@ -12,7 +12,7 @@
     <name>Components - MultiRuntimeComponent - runtime v01</name>
     <groupId>org.talend.components</groupId>
     <artifactId>test-multiple-runtime-comp-runtime-v01</artifactId>
-    <version>0.1.0</version>
+    <version>0.16.1-SNAPSHOT</version>
     <packaging>bundle</packaging>
     <repositories>
         <repository>
@@ -39,7 +39,7 @@
         <dependency>
             <groupId>org.talend.components</groupId>
 		    <artifactId>multiple-runtime-comp</artifactId>
-		    <version>0.1.0</version>
+		    <version>0.16.1-SNAPSHOT</version>
         </dependency>
 		  <!-- APIs for all Components -->
         <dependency>

@@ -12,7 +12,7 @@
 
 	<name>Test MultiRuntimeComponent component</name>
 	<artifactId>test-multiple-runtime-comp</artifactId>
-	<version>0.1.0</version>
+	<version>0.16.1-SNAPSHOT</version>
 	<repositories>
 		<repository>
 			<id>talend_nexus</id>
@@ -84,7 +84,7 @@
 		<dependency>
 			<groupId>org.talend.components</groupId>
 			<artifactId>multiple-runtime-comp</artifactId>
-			<version>0.1.0</version>
+			<version>0.16.1-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
