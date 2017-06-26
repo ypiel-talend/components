@@ -34,6 +34,8 @@ import org.talend.components.jira.datum.Entity;
 import org.talend.components.jira.runtime.JiraSource;
 import org.talend.daikon.avro.converter.IndexedRecordConverter;
 
+import static javax.servlet.http.HttpServletResponse.SC_OK;
+
 /**
  * Jira reader implementation
  */
@@ -98,7 +100,7 @@ public abstract class JiraReader implements Reader<IndexedRecord> {
 
     /**
      * Constructor sets required properties for http connection
-     * 
+     *
      * @param source instance of {@link Source}, which had created this {@link Reader}
      * @param resource REST resource to communicate
      */
@@ -122,7 +124,7 @@ public abstract class JiraReader implements Reader<IndexedRecord> {
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @throws IOException in case of exception during http connection
      */
     @Override
@@ -134,7 +136,7 @@ public abstract class JiraReader implements Reader<IndexedRecord> {
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @throws IOException in case {@link JiraReader#start()} wasn't invoked or
      * in case of exception during http connection
      */
@@ -156,7 +158,7 @@ public abstract class JiraReader implements Reader<IndexedRecord> {
 
     /**
      * Tries to get more records
-     * 
+     *
      * @throws IOException in case of exception during http connection
      */
     protected abstract void requestMoreRecords() throws IOException;
@@ -204,7 +206,7 @@ public abstract class JiraReader implements Reader<IndexedRecord> {
 
     /**
      * Returns {@link JiraSource} instance
-     * 
+     *
      * @return {@link JiraSource} instance, which had created this {@link Reader}
      */
     @Override
@@ -214,7 +216,7 @@ public abstract class JiraReader implements Reader<IndexedRecord> {
 
     /**
      * Returns return values
-     * 
+     *
      * @return map with return values
      */
     @Override
@@ -224,12 +226,17 @@ public abstract class JiraReader implements Reader<IndexedRecord> {
 
     /**
      * Makes http request to the server and process its response
-     * 
+     *
+     * @throws RuntimeException in case of responce code is not SC_OK (200)
      * @throws IOException in case of exception during http connection
+     *
      */
     protected void makeHttpRequest() throws IOException {
         Map<String, Object> parameters = prepareParameters();
         JiraResponse jiraResponse = rest.get(resource, parameters);
+        if (jiraResponse.getStatusCode() != SC_OK) {
+            throw generateJiraException(jiraResponse.getStatusCode(), jiraResponse.getBody());
+        }
         response = jiraResponse.getBody();
         entities = processResponse(response);
         if (!entities.isEmpty()) {
@@ -242,7 +249,7 @@ public abstract class JiraReader implements Reader<IndexedRecord> {
     /**
      * Prepares and returns map with http parameters suitable for current REST API resource.
      * Returns shared parameters by default
-     * 
+     *
      * @return map with shared parameters
      */
     protected Map<String, Object> prepareParameters() {
@@ -252,7 +259,7 @@ public abstract class JiraReader implements Reader<IndexedRecord> {
     /**
      * Process response. Updates http parameters for next request if needed.
      * Retrieves entities from response
-     * 
+     *
      * @param response http response
      * @return {@link List} of entities retrieved from response
      */
@@ -260,7 +267,7 @@ public abstract class JiraReader implements Reader<IndexedRecord> {
 
     /**
      * Creates and returns map with shared http query parameters
-     * 
+     *
      * @return shared http parameters
      */
     private Map<String, Object> createSharedParameters() {
@@ -275,5 +282,10 @@ public abstract class JiraReader implements Reader<IndexedRecord> {
         sharedParameters.put(maxResultsKey, batchSize);
         return Collections.unmodifiableMap(sharedParameters);
     }
+
+    private RuntimeException generateJiraException(int code, String errorMessage) {
+        return new RuntimeException("Can't get response from server, error code is " + code + " , error message: " + errorMessage);
+    }
+
 
 }
