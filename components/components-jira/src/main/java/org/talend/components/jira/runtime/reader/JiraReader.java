@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.talend.components.api.component.runtime.Reader;
 import org.talend.components.api.component.runtime.Result;
 import org.talend.components.api.component.runtime.Source;
+import org.talend.components.api.exception.ComponentException;
 import org.talend.components.jira.avro.IssueAdapterFactory;
 import org.talend.components.jira.avro.IssueIndexedRecord;
 import org.talend.components.jira.connection.JiraResponse;
@@ -33,6 +34,8 @@ import org.talend.components.jira.connection.Rest;
 import org.talend.components.jira.datum.Entity;
 import org.talend.components.jira.runtime.JiraSource;
 import org.talend.daikon.avro.converter.IndexedRecordConverter;
+import org.talend.daikon.exception.ExceptionContext;
+import org.talend.daikon.exception.error.DefaultErrorCode;
 
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 
@@ -227,7 +230,7 @@ public abstract class JiraReader implements Reader<IndexedRecord> {
     /**
      * Makes http request to the server and process its response
      *
-     * @throws RuntimeException in case of responce code is not SC_OK (200)
+     * @throws ComponentException in case of response code is not SC_OK (200)
      * @throws IOException      in case of exception during http connection
      */
     protected void makeHttpRequest() throws IOException {
@@ -282,13 +285,16 @@ public abstract class JiraReader implements Reader<IndexedRecord> {
         return Collections.unmodifiableMap(sharedParameters);
     }
 
-    private RuntimeException generateJiraException(int code, String errorMessage) {
-        if (errorMessage.contains("errorMessages")) {
-            errorMessage = errorMessage.substring(errorMessage.indexOf("errorMessages"))
-                    .substring(errorMessage.indexOf("[") + 1, errorMessage.lastIndexOf("]"));
-        }
-        return new RuntimeException(
-                "Can't get response from server, error code is " + code + " , error message: " + errorMessage);
+    /**
+     * Creates and returns RuntimeException with prepared error message
+     *
+     * @return ComponentException with error message when jira server return not OK status code
+     */
+    private ComponentException generateJiraException(int code, String errorMessage) {
+
+        return new ComponentException(new DefaultErrorCode(code), ExceptionContext.build()
+                .put("message","Can't get response from server, error code is " + code + errorMessage));
+
     }
 
 }
