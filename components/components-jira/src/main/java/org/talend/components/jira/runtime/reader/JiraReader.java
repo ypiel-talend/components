@@ -228,8 +228,7 @@ public abstract class JiraReader implements Reader<IndexedRecord> {
      * Makes http request to the server and process its response
      *
      * @throws RuntimeException in case of responce code is not SC_OK (200)
-     * @throws IOException in case of exception during http connection
-     *
+     * @throws IOException      in case of exception during http connection
      */
     protected void makeHttpRequest() throws IOException {
         Map<String, Object> parameters = prepareParameters();
@@ -284,8 +283,12 @@ public abstract class JiraReader implements Reader<IndexedRecord> {
     }
 
     private RuntimeException generateJiraException(int code, String errorMessage) {
-        return new RuntimeException("Can't get response from server, error code is " + code + " , error message: " + errorMessage);
+        if (errorMessage.contains("errorMessages")) {
+            errorMessage = errorMessage.substring(errorMessage.indexOf("errorMessages"))
+                    .substring(errorMessage.indexOf("[") + 1, errorMessage.lastIndexOf("]"));
+        }
+        return new RuntimeException(
+                "Can't get response from server, error code is " + code + " , error message: " + errorMessage);
     }
-
 
 }
