@@ -1,0 +1,22 @@
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.talend.components</groupId>
+    <artifactId>components-google-aggregator</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+
+    <name>Components - TGoogleFusionTableInput Aggregator</name>
+    <packaging>pom</packaging>
+
+    <properties>
+        <!-- skip the deployment for this aggregator, not necessary -->
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
+
+    <modules>
+        <module>components-google-definition</module>
+        <module>components-google-runtime</module>
+    </modules>
+
+</project>
