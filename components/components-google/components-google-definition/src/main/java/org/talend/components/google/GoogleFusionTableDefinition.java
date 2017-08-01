@@ -12,25 +12,16 @@
 // ============================================================================
 package org.talend.components.google;
 
-import java.util.EnumSet;
-import java.util.Set;
-
 import org.talend.components.api.component.AbstractComponentDefinition;
-import org.talend.components.api.component.ConnectorTopology;
 import org.talend.components.api.component.runtime.ExecutionEngine;
-import org.talend.components.api.properties.ComponentProperties;
-import org.talend.components.google.RuntimeInfoProvider;
 import org.talend.daikon.properties.property.Property;
-import org.talend.daikon.runtime.RuntimeInfo;
-
 
 /**
- * The TGoogleFusionTableInputDefinition acts as an entry point for all of services that 
- * a component provides to integrate with the Runtime Platform (at design-time) and other 
+ * The TGoogleFusionTableInputDefinition acts as an entry point for all of services that
+ * a component provides to integrate with the Runtime Platform (at design-time) and other
  * components (at run-time).
  */
 public abstract class GoogleFusionTableDefinition extends AbstractComponentDefinition {
-    
 
     public GoogleFusionTableDefinition(String COMPONENT_NAME) {
         super(COMPONENT_NAME, ExecutionEngine.DI);
@@ -42,14 +33,14 @@ public abstract class GoogleFusionTableDefinition extends AbstractComponentDefin
     }
 
     /**
-     * Defines a list of Return Properties (a.k.a After Properties). 
+     * Defines a list of Return Properties (a.k.a After Properties).
      * These properties collect different metrics and information during component execution.
      * Values of these properties are returned after component finished his work.
      * Runtime Platform may use this method to retrieve a this list and show in UI
      * Here, it is defined 2 properties: <br>
      * 1) Error message
      * 2) Number of records processed
-     * For Error message property no efforts are required from component developer to set its value. 
+     * For Error message property no efforts are required from component developer to set its value.
      * Runtime Platform will set its value by itself in case of Exception in runtime.
      * As for Number of records property see Reader implementation in runtime part
      */
@@ -57,7 +48,5 @@ public abstract class GoogleFusionTableDefinition extends AbstractComponentDefin
     public Property[] getReturnProperties() {
         return new Property[] { RETURN_TOTAL_RECORD_COUNT_PROP, RETURN_ERROR_MESSAGE_PROP };
     }
-    
-   
-  
+
 }

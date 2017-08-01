@@ -20,5 +20,5 @@ import org.talend.components.service.spring.SpringTestApp;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = SpringTestApp.class)
 public class SpringTGoogleFusionTableInputTestIT extends TGoogleFusionTableInputTestBase {
-    //all test are to be found the parent classes    
+    // all test are to be found the parent classes
 }

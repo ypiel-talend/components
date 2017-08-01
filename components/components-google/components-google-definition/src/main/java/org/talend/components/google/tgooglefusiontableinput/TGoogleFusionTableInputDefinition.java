@@ -15,53 +15,34 @@ package org.talend.components.google.tgooglefusiontableinput;
 import java.util.EnumSet;
 import java.util.Set;
 
-import org.talend.components.api.component.AbstractComponentDefinition;
 import org.talend.components.api.component.ConnectorTopology;
 import org.talend.components.api.component.runtime.ExecutionEngine;
 import org.talend.components.api.properties.ComponentProperties;
-import org.talend.components.google.RuntimeInfoProvider;
-import org.talend.daikon.properties.property.Property;
-import org.talend.daikon.runtime.RuntimeInfo;
 import org.talend.components.google.GoogleFusionTableDefinition;
+import org.talend.components.google.RuntimeInfoProvider;
+import org.talend.daikon.runtime.RuntimeInfo;
 
 /**
- * The TGoogleFusionTableInputDefinition acts as an entry point for all of services that 
- * a component provides to integrate with the Runtime Platform (at design-time) and other 
+ * The TGoogleFusionTableInputDefinition acts as an entry point for all of services that
+ * a component provides to integrate with the Runtime Platform (at design-time) and other
  * components (at run-time).
  */
 public class TGoogleFusionTableInputDefinition extends GoogleFusionTableDefinition {
-    
+
     public static final String COMPONENT_NAME = "tGoogleFusionTableInput"; //$NON-NLS-1$
-    
+
     public TGoogleFusionTableInputDefinition() {
         super(COMPONENT_NAME);
     }
 
-
-    /**
-     * Defines a list of Return Properties (a.k.a After Properties). 
-     * These properties collect different metrics and information during component execution.
-     * Values of these properties are returned after component finished his work.
-     * Runtime Platform may use this method to retrieve a this list and show in UI
-     * Here, it is defined 2 properties: <br>
-     * 1) Error message
-     * 2) Number of records processed
-     * For Error message property no efforts are required from component developer to set its value. 
-     * Runtime Platform will set its value by itself in case of Exception in runtime.
-     * As for Number of records property see Reader implementation in runtime part
-     */
-   /** @Override
-    public Property[] getReturnProperties() {
-        return new Property[] { RETURN_TOTAL_RECORD_COUNT_PROP, RETURN_ERROR_MESSAGE_PROP };
-    }*/
-    
     @Override
     public Class<? extends ComponentProperties> getPropertyClass() {
         return TGoogleFusionTableInputProperties.class;
     }
-    
+
     @Override
-    public RuntimeInfo getRuntimeInfo(ExecutionEngine engine, ComponentProperties properties, ConnectorTopology connectorTopology) {
+    public RuntimeInfo getRuntimeInfo(ExecutionEngine engine, ComponentProperties properties,
+            ConnectorTopology connectorTopology) {
         assertEngineCompatibility(engine);
         assertConnectorTopologyCompatibility(connectorTopology);
         return RuntimeInfoProvider.provideInputRuntimeInfo();
@@ -70,6 +51,6 @@ public class TGoogleFusionTableInputDefinition extends GoogleFusionTableDefiniti
     @Override
     public Set<ConnectorTopology> getSupportedConnectorTopologies() {
         return EnumSet.of(ConnectorTopology.OUTGOING);
-    } 
-    
+    }
+
 }

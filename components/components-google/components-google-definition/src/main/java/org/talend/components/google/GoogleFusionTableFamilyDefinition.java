@@ -25,7 +25,8 @@ import com.google.auto.service.AutoService;
  * Install all of the definitions provided for the GoogleFusionTable family of components.
  */
 @AutoService(ComponentInstaller.class)
-@Component(name = Constants.COMPONENT_INSTALLER_PREFIX + GoogleFusionTableFamilyDefinition.NAME, provide = ComponentInstaller.class)
+@Component(name = Constants.COMPONENT_INSTALLER_PREFIX
+        + GoogleFusionTableFamilyDefinition.NAME, provide = ComponentInstaller.class)
 public class GoogleFusionTableFamilyDefinition extends AbstractComponentFamilyDefinition implements ComponentInstaller {
 
     public static final String NAME = "GoogleFusionTable";

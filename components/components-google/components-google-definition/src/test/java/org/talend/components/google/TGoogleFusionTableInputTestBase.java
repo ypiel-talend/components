@@ -21,9 +21,6 @@ import org.talend.components.google.tgooglefusiontableinput.TGoogleFusionTableIn
 import org.talend.daikon.definition.Definition;
 import org.talend.daikon.definition.service.DefinitionRegistryService;
 
-
-
-
 public class TGoogleFusionTableInputTestBase extends AbstractComponentTest2 {
 
     @Inject
@@ -33,11 +30,12 @@ public class TGoogleFusionTableInputTestBase extends AbstractComponentTest2 {
     public DefinitionRegistryService getDefinitionRegistry() {
         return definitionRegistry;
     }
-    
-    @Test
-    public void testComponentHasBeenRegistered(){
 
-    	assertComponentIsRegistered(ComponentDefinition.class, "tGoogleFusionTableInput", TGoogleFusionTableInputDefinition.class);
+    @Test
+    public void testComponentHasBeenRegistered() {
+
+        assertComponentIsRegistered(ComponentDefinition.class, "tGoogleFusionTableInput",
+                TGoogleFusionTableInputDefinition.class);
         assertComponentIsRegistered(Definition.class, "tGoogleFusionTableInput", TGoogleFusionTableInputDefinition.class);
     }
 }
