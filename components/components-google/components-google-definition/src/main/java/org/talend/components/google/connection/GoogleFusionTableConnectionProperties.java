@@ -12,17 +12,20 @@
 // ============================================================================
 package org.talend.components.google.connection;
 
+import java.util.EnumSet;
+
 import org.talend.daikon.properties.PropertiesImpl;
+import org.talend.daikon.properties.property.Property;
+import org.talend.daikon.properties.property.PropertyFactory;
 
 /**
- * Stores properties required for connection. Google Fusion Tables support OAuth 2.0 authorization, so 
- * client id and client secret are required. These values will be used to get authorization code and 
+ * Stores properties required for connection. Google Fusion Tables support OAuth 2.0 authorization, so
+ * client id and client secret are required. These values will be used to get authorization code and
  * access and refresh tokens after.
- * <p>
- * Also it stores path to local credentials store. This store is secure store on local file system used
- * to store access and refresh token
  */
 public class GoogleFusionTableConnectionProperties extends PropertiesImpl {
+
+    private static final long serialVersionUID = 5928871310221499828L;
 
     /**
      * Constructor sets properties name
@@ -32,5 +35,10 @@ public class GoogleFusionTableConnectionProperties extends PropertiesImpl {
     public GoogleFusionTableConnectionProperties(String name) {
         super(name);
     }
+
+    public final Property<String> clientId = PropertyFactory.newString("clientId");
+
+    public final Property<String> clientSecret = PropertyFactory.newString("clientSecret")
+            .setFlags(EnumSet.of(Property.Flags.ENCRYPT, Property.Flags.SUPPRESS_LOGGING));
 
 }
