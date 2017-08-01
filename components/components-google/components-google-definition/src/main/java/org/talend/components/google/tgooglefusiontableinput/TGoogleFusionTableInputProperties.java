@@ -95,10 +95,6 @@ public class TGoogleFusionTableInputProperties extends FixedConnectorsComponentP
         }
     }
 
-    public void afterQueryMode() {
-        refreshLayout(getForm(Form.MAIN));
-    }
-
     /**
      * Returns input or output component connectors
      * 
