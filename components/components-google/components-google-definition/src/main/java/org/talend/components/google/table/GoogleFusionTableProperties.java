@@ -12,7 +12,10 @@
 // ============================================================================
 package org.talend.components.google.table;
 
+import org.talend.components.common.SchemaProperties;
 import org.talend.daikon.properties.PropertiesImpl;
+import org.talend.daikon.properties.property.Property;
+import org.talend.daikon.properties.property.PropertyFactory;
 
 /**
  * Stores Google Fusion Table id and its schema, which is specified by user.
@@ -20,6 +23,14 @@ import org.talend.daikon.properties.PropertiesImpl;
  */
 public class GoogleFusionTableProperties extends PropertiesImpl {
 
+    private static final long serialVersionUID = -4353914708920008905L;
+
+    public final Property<String> tableId = PropertyFactory.newString("tableId");
+
+    public final SchemaProperties tableSchema = new SchemaProperties("tableSchema");
+    
+    public final Property<String> query = PropertyFactory.newString("query");
+    
     /**
      * Constructor sets properties name
      * 
