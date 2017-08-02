@@ -15,6 +15,7 @@ package org.talend.components.google.connection;
 import java.util.EnumSet;
 
 import org.talend.daikon.properties.PropertiesImpl;
+import org.talend.daikon.properties.presentation.Form;
 import org.talend.daikon.properties.property.Property;
 import org.talend.daikon.properties.property.PropertyFactory;
 
@@ -49,6 +50,17 @@ public class GoogleFusionTableConnectionProperties extends PropertiesImpl {
         super.setupProperties();
         clientId.setValue("");
         clientSecret.setValue("");
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setupLayout() {
+        super.setupLayout();
+        Form mainForm = new Form(this, Form.MAIN);
+        mainForm.addRow(clientId);
+        mainForm.addRow(clientSecret);
     }
 
 }
