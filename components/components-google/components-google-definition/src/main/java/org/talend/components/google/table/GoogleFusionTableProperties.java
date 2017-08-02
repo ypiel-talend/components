@@ -14,6 +14,8 @@ package org.talend.components.google.table;
 
 import org.talend.components.common.SchemaProperties;
 import org.talend.daikon.properties.PropertiesImpl;
+import org.talend.daikon.properties.presentation.Form;
+import org.talend.daikon.properties.presentation.Widget;
 import org.talend.daikon.properties.property.Property;
 import org.talend.daikon.properties.property.PropertyFactory;
 
@@ -28,9 +30,9 @@ public class GoogleFusionTableProperties extends PropertiesImpl {
     public final Property<String> tableId = PropertyFactory.newString("tableId");
 
     public final SchemaProperties tableSchema = new SchemaProperties("tableSchema");
-    
+
     public final Property<String> query = PropertyFactory.newString("query");
-    
+
     /**
      * Constructor sets properties name
      * 
@@ -40,4 +42,25 @@ public class GoogleFusionTableProperties extends PropertiesImpl {
         super(name);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setupProperties() {
+        super.setupProperties();
+        tableId.setValue("");
+        query.setValue("");
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setupLayout() {
+        super.setupLayout();
+        Form mainForm = new Form(this, Form.MAIN);
+        mainForm.addRow(tableId);
+        mainForm.addRow(tableSchema.getForm(Form.REFERENCE));
+        mainForm.addRow(Widget.widget(query).setReadonly(true));
+    }
 }
