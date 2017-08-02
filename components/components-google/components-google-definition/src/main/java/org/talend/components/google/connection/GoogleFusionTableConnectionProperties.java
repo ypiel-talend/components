@@ -41,4 +41,14 @@ public class GoogleFusionTableConnectionProperties extends PropertiesImpl {
     public final Property<String> clientSecret = PropertyFactory.newString("clientSecret")
             .setFlags(EnumSet.of(Property.Flags.ENCRYPT, Property.Flags.SUPPRESS_LOGGING));
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setupProperties() {
+        super.setupProperties();
+        clientId.setValue("");
+        clientSecret.setValue("");
+    }
+
 }
