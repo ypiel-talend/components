@@ -18,6 +18,7 @@ import org.talend.components.api.component.PropertyPathConnector;
 import org.talend.components.common.FixedConnectorsComponentProperties;
 import org.talend.components.google.connection.GoogleFusionTableConnectionProperties;
 import org.talend.components.google.table.GoogleFusionTableProperties;
+import org.talend.daikon.properties.presentation.Form;
 
 public class TGoogleFusionTableInputProperties extends FixedConnectorsComponentProperties {
 
@@ -35,6 +36,18 @@ public class TGoogleFusionTableInputProperties extends FixedConnectorsComponentP
      */
     public TGoogleFusionTableInputProperties(String name) {
         super(name);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setupLayout() {
+        super.setupLayout();
+        
+        Form mainForm = new Form(this, Form.MAIN);
+        mainForm.addRow(connectionProperties.getForm(Form.MAIN));
+        mainForm.addRow(tableProperties.getForm(Form.MAIN));
     }
 
     @Override
