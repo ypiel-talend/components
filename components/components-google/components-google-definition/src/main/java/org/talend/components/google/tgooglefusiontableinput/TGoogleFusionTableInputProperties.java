@@ -12,8 +12,10 @@
 // ============================================================================
 package org.talend.components.google.tgooglefusiontableinput;
 
+import java.util.Collections;
 import java.util.Set;
 
+import org.talend.components.api.component.Connector;
 import org.talend.components.api.component.PropertyPathConnector;
 import org.talend.components.common.FixedConnectorsComponentProperties;
 import org.talend.components.google.connection.GoogleFusionTableConnectionProperties;
@@ -26,8 +28,11 @@ public class TGoogleFusionTableInputProperties extends FixedConnectorsComponentP
 
     public final GoogleFusionTableConnectionProperties connectionProperties = new GoogleFusionTableConnectionProperties(
             "connectionProperties");
-    
+
     public final GoogleFusionTableProperties tableProperties = new GoogleFusionTableProperties("tableProperties");
+
+    private final transient PropertyPathConnector mainOutgoingConnector = new PropertyPathConnector(Connector.MAIN_NAME,
+            "tableProperties.tableSchema");
 
     /**
      * Constructor sets properties name
@@ -37,22 +42,32 @@ public class TGoogleFusionTableInputProperties extends FixedConnectorsComponentP
     public TGoogleFusionTableInputProperties(String name) {
         super(name);
     }
-    
+
     /**
      * {@inheritDoc}
      */
     @Override
     public void setupLayout() {
         super.setupLayout();
-        
+
         Form mainForm = new Form(this, Form.MAIN);
         mainForm.addRow(connectionProperties.getForm(Form.MAIN));
         mainForm.addRow(tableProperties.getForm(Form.MAIN));
     }
 
+    /**
+     * Returns set of incoming or outgoing connectors
+     * 
+     * @param isOutputConnectors specifies either incoming or outgoing connectors are requested
+     * @return set of incoming or outgoing connectors
+     */
     @Override
-    protected Set<PropertyPathConnector> getAllSchemaPropertiesConnectors(boolean isOutputConnection) {
-        return null;
+    protected Set<PropertyPathConnector> getAllSchemaPropertiesConnectors(boolean isOutputConnectors) {
+        if (isOutputConnectors) {
+            return Collections.singleton(mainOutgoingConnector);
+        } else {
+            return Collections.emptySet();
+        }
     }
 
 }
