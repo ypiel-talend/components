@@ -16,8 +16,17 @@ import java.util.Set;
 
 import org.talend.components.api.component.PropertyPathConnector;
 import org.talend.components.common.FixedConnectorsComponentProperties;
+import org.talend.components.google.connection.GoogleFusionTableConnectionProperties;
+import org.talend.components.google.table.GoogleFusionTableProperties;
 
 public class TGoogleFusionTableInputProperties extends FixedConnectorsComponentProperties {
+
+    private static final long serialVersionUID = -1908527018782175776L;
+
+    public final GoogleFusionTableConnectionProperties connectionProperties = new GoogleFusionTableConnectionProperties(
+            "connectionProperties");
+    
+    public final GoogleFusionTableProperties tableProperties = new GoogleFusionTableProperties("tableProperties");
 
     /**
      * Constructor sets properties name
