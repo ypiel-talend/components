@@ -20,26 +20,36 @@ import org.talend.components.api.component.runtime.BoundedReader;
 import org.talend.components.api.component.runtime.BoundedSource;
 import org.talend.components.api.container.RuntimeContainer;
 import org.talend.components.api.properties.ComponentProperties;
+import org.talend.components.google.tgooglefusiontableinput.TGoogleFusionTableInputProperties;
 import org.talend.daikon.NamedThing;
 import org.talend.daikon.properties.ValidationResult;
+import org.talend.daikon.properties.ValidationResult.Result;
 
 public class TGoogleFusionTableInputSource implements BoundedSource {
 
+    private TGoogleFusionTableInputProperties properties;
+
     @Override
     public ValidationResult initialize(RuntimeContainer container, ComponentProperties properties) {
-        return null;
+        assert properties instanceof TGoogleFusionTableInputProperties;
+        this.properties = (TGoogleFusionTableInputProperties) properties;
+        if (isCredentialsSet()) {
+            return ValidationResult.OK;
+        } else {
+            return new ValidationResult(Result.ERROR, "Client Id or/and Client Secret wasn't set");
+        }
     }
-    
+
     @Override
     public ValidationResult validate(RuntimeContainer container) {
         return null;
     }
-    
+
     @Override
     public BoundedReader createReader(RuntimeContainer adaptor) {
         return null;
     }
-    
+
     @Override
     public List<NamedThing> getSchemaNames(RuntimeContainer container) throws IOException {
         return null;
@@ -64,6 +74,23 @@ public class TGoogleFusionTableInputSource implements BoundedSource {
     @Override
     public boolean producesSortedKeys(RuntimeContainer adaptor) {
         return false;
+    }
+
+    /**
+     * Checks whether credentials were set. If they are empty, method returns false
+     * 
+     * @return true when credentials are set, false - otherwise
+     */
+    private boolean isCredentialsSet() {
+        String clientId = properties.connectionProperties.clientId.getValue();
+        if (clientId == null || clientId.trim().isEmpty()) {
+            return false;
+        }
+        String clientSecret = properties.connectionProperties.clientSecret.getValue();
+        if (clientSecret == null || clientSecret.trim().isEmpty()) {
+            return false;
+        }
+        return true;
     }
 
 }
