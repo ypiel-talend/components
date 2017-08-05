@@ -69,5 +69,23 @@ public class TGoogleFusionTableInputProperties extends FixedConnectorsComponentP
             return Collections.emptySet();
         }
     }
+    
+    /**
+     * Returns Client Id value
+     * 
+     * @return Client Id value
+     */
+    public String getClientId() {
+        return connectionProperties.clientId.getValue();
+    }
+    
+    /**
+     * Returns Client Secret value
+     * 
+     * @return Client Secret value
+     */
+    public String getClientSecret() {
+        return connectionProperties.clientSecret.getValue();
+    }
 
 }

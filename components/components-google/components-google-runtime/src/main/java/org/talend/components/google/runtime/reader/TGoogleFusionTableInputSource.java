@@ -13,6 +13,7 @@
 package org.talend.components.google.runtime.reader;
 
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.List;
 
 import org.apache.avro.Schema;
@@ -25,9 +26,13 @@ import org.talend.daikon.NamedThing;
 import org.talend.daikon.properties.ValidationResult;
 import org.talend.daikon.properties.ValidationResult.Result;
 
+import com.google.api.services.fusiontables.Fusiontables;
+
 public class TGoogleFusionTableInputSource implements BoundedSource {
 
     private TGoogleFusionTableInputProperties properties;
+
+    private transient Fusiontables fusionTables;
 
     @Override
     public ValidationResult initialize(RuntimeContainer container, ComponentProperties properties) {
@@ -42,7 +47,12 @@ public class TGoogleFusionTableInputSource implements BoundedSource {
 
     @Override
     public ValidationResult validate(RuntimeContainer container) {
-        return null;
+        try {
+            getConnection();
+        } catch (IOException | GeneralSecurityException e) {
+            return new ValidationResult(Result.ERROR, "Error during connection establishment");
+        }
+        return ValidationResult.OK;
     }
 
     @Override
@@ -74,6 +84,20 @@ public class TGoogleFusionTableInputSource implements BoundedSource {
     @Override
     public boolean producesSortedKeys(RuntimeContainer adaptor) {
         return false;
+    }
+
+    /**
+     * Returns Fusion Tables connection. Creates it, if it doesn't exist yet
+     * 
+     * @return Fusion Tables connection
+     * @throws GeneralSecurityException
+     * @throws IOException
+     */
+    Fusiontables getConnection() throws GeneralSecurityException, IOException {
+        if (fusionTables == null) {
+            fusionTables = new FusionTablesCreator(properties.getClientId(), properties.getClientSecret()).createFusionTables();
+        }
+        return fusionTables;
     }
 
     /**
