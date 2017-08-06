@@ -62,12 +62,12 @@ public class TGoogleFusionTableInputSource implements BoundedSource {
 
     @Override
     public List<NamedThing> getSchemaNames(RuntimeContainer container) throws IOException {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Schema getEndpointSchema(RuntimeContainer container, String schemaName) throws IOException {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
