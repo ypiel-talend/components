@@ -14,6 +14,7 @@ package org.talend.components.google.runtime.reader;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.avro.Schema;
@@ -73,11 +74,13 @@ public class TGoogleFusionTableInputSource implements BoundedSource {
     @Override
     public List<? extends BoundedSource> splitIntoBundles(long desiredBundleSizeBytes, RuntimeContainer adaptor)
             throws Exception {
-        return null;
+        // This source won't be splitted
+        return Arrays.asList(this);
     }
 
     @Override
     public long getEstimatedSizeBytes(RuntimeContainer adaptor) {
+     // This will be ignored since the source will never be split.
         return 0;
     }
 
