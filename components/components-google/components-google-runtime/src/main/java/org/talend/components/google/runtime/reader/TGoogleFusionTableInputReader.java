@@ -31,7 +31,7 @@ public class TGoogleFusionTableInputReader extends AbstractBoundedReader<Indexed
      * 
      * @param source {@link Source} of this {@link Reader}
      */
-    protected TGoogleFusionTableInputReader(BoundedSource source) {
+    protected TGoogleFusionTableInputReader(TGoogleFusionTableInputSource source) {
         super(source);
     }
 
@@ -53,6 +53,11 @@ public class TGoogleFusionTableInputReader extends AbstractBoundedReader<Indexed
     @Override
     public Map<String, Object> getReturnValues() {
         return null;
+    }
+    
+    @Override
+    public TGoogleFusionTableInputSource getCurrentSource() {
+        return (TGoogleFusionTableInputSource) super.getCurrentSource();
     }
 
 }
