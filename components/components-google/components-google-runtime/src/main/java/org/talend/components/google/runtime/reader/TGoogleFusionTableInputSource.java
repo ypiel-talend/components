@@ -104,6 +104,10 @@ public class TGoogleFusionTableInputSource implements BoundedSource {
         }
         return fusionTables;
     }
+    
+    String getQuery() {
+        return properties.tableProperties.query.getValue();
+    }
 
     /**
      * Checks whether credentials were set. If they are empty, method returns false

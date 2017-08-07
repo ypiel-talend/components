@@ -13,18 +13,37 @@
 package org.talend.components.google.runtime.reader;
 
 import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.apache.avro.generic.IndexedRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.talend.components.api.component.runtime.AbstractBoundedReader;
 import org.talend.components.api.component.runtime.BoundedReader;
-import org.talend.components.api.component.runtime.BoundedSource;
+import org.talend.components.api.component.runtime.Reader;
+import org.talend.components.api.component.runtime.Source;
+
+import com.google.api.services.fusiontables.Fusiontables;
+import com.google.api.services.fusiontables.Fusiontables.Query.Sql;
+import com.google.api.services.fusiontables.model.Sqlresponse;
 
 /**
  * Reader for Google Fusion Tables. Reads rows of specified table
  */
 public class TGoogleFusionTableInputReader extends AbstractBoundedReader<IndexedRecord> implements BoundedReader<IndexedRecord> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TGoogleFusionTableInputReader.class);
+
+    private Iterator<List<Object>> rows;
+
+    /**
+     * Represents state of this Reader: whether it was started or not
+     */
+    private boolean started = false;
 
     /**
      * Constructor sets {@link Source} of this {@link Reader}
@@ -37,7 +56,18 @@ public class TGoogleFusionTableInputReader extends AbstractBoundedReader<Indexed
 
     @Override
     public boolean start() throws IOException {
-        return false;
+        try {
+            Fusiontables fusionTables = getCurrentSource().getConnection();
+            String query = getCurrentSource().getQuery();
+            Sql sql = fusionTables.query().sql(query);
+            LOGGER.debug("execute query: " + query);
+            Sqlresponse response = sql.execute();
+            rows = response.getRows().iterator();
+            started = true;
+            return advance();
+        } catch (GeneralSecurityException e) {
+            throw new IOException(e);
+        }
     }
 
     @Override
@@ -54,7 +84,7 @@ public class TGoogleFusionTableInputReader extends AbstractBoundedReader<Indexed
     public Map<String, Object> getReturnValues() {
         return null;
     }
-    
+
     @Override
     public TGoogleFusionTableInputSource getCurrentSource() {
         return (TGoogleFusionTableInputSource) super.getCurrentSource();
