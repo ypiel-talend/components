@@ -31,6 +31,8 @@ import com.google.api.services.fusiontables.Fusiontables;
 
 public class TGoogleFusionTableInputSource implements BoundedSource {
 
+    private static final long serialVersionUID = 1L;
+
     private TGoogleFusionTableInputProperties properties;
 
     private transient Fusiontables fusionTables;
@@ -80,7 +82,7 @@ public class TGoogleFusionTableInputSource implements BoundedSource {
 
     @Override
     public long getEstimatedSizeBytes(RuntimeContainer adaptor) {
-     // This will be ignored since the source will never be split.
+        // This will be ignored since the source will never be split.
         return 0;
     }
 
