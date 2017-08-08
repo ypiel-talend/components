@@ -19,28 +19,39 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.IndexedRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.talend.components.api.component.runtime.Result;
 import org.talend.components.api.component.runtime.WriteOperation;
 import org.talend.components.api.component.runtime.WriterWithFeedback;
 import org.talend.components.api.container.RuntimeContainer;
+import org.talend.components.api.exception.ComponentException;
 import org.talend.components.snowflake.SnowflakeConnectionProperties;
 import org.talend.components.snowflake.tsnowflakeoutput.TSnowflakeOutputProperties;
 import org.talend.daikon.avro.AvroUtils;
 import org.talend.daikon.avro.SchemaConstants;
 import org.talend.daikon.avro.converter.IndexedRecordConverter;
+import org.talend.daikon.exception.ExceptionContext.ExceptionContextBuilder;
+import org.talend.daikon.exception.error.DefaultErrorCode;
+import org.talend.daikon.i18n.GlobalI18N;
+import org.talend.daikon.i18n.I18nMessages;
 
 import net.snowflake.client.loader.LoadResultListener;
 import net.snowflake.client.loader.LoaderFactory;
@@ -50,6 +61,11 @@ import net.snowflake.client.loader.Operation;
 import net.snowflake.client.loader.StreamLoader;
 
 public final class SnowflakeWriter implements WriterWithFeedback<Result, IndexedRecord, IndexedRecord> {
+
+    private transient static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeWriter.class);
+
+    private static final I18nMessages I18N_MESSAGES = GlobalI18N.getI18nMessageProvider()
+            .getI18nMessages(SnowflakeWriter.class);
 
     private static SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -294,8 +310,9 @@ public final class SnowflakeWriter implements WriterWithFeedback<Result, Indexed
         List<String> columnsStr = new ArrayList<>();
         for (Field f : columns) {
             columnsStr.add(f.name());
-            if (null != f.getProp(SchemaConstants.TALEND_COLUMN_IS_KEY))
+            if (null != f.getProp(SchemaConstants.TALEND_COLUMN_IS_KEY)) {
                 keyStr.add(f.name());
+            }
         }
 
         row = new Object[columnsStr.size()];
@@ -305,8 +322,9 @@ public final class SnowflakeWriter implements WriterWithFeedback<Result, Indexed
             keyStr.clear();
             keyStr.add(sprops.upsertKeyColumn.getValue());
         }
-        if (keyStr.size() > 0)
+        if (keyStr.size() > 0) {
             prop.put(LoaderProperty.keys, keyStr);
+        }
 
         prop.put(LoaderProperty.remoteStage, "~");
 
@@ -327,24 +345,59 @@ public final class SnowflakeWriter implements WriterWithFeedback<Result, Indexed
                     .createIndexedRecordConverter(datum.getClass());
         }
         IndexedRecord input = factory.convertToAvro(datum);
-        List<Schema.Field> fields = input.getSchema().getFields();
+        List<Schema.Field> remoteTableFields = mainSchema.getFields();
 
-        // input and mainSchema synchronization. Such situation is useful in case of Dynamic
+        /*
+         * This piece will be executed only once per instance. Will not cause performance issue.
+         * Perform input and mainSchema synchronization. Such situation is useful in case of Dynamic fields.
+         */
         if (isFirst) {
-             collectedFields = new ArrayList<>();
-            for (Schema.Field item : fields) {
-                Schema.Field fieldFromMainSchema = mainSchema.getField(item.name());
-                if (fieldFromMainSchema != null) {
-                    collectedFields.add(fieldFromMainSchema);
+            List<Schema.Field> fields = new ArrayList<>(input.getSchema().getFields());
+            collectedFields = new ArrayList<>(remoteTableFields.size());
+            boolean completelyDifferent = true;
+            for(Schema.Field snowflakeRuntimeField : remoteTableFields) {
+                boolean isAdded = false;
+                Iterator<Schema.Field> iterator = fields.iterator();
+                while(iterator.hasNext()) {
+                    Schema.Field incomingField = iterator.next();
+                    if (incomingField.name().equalsIgnoreCase(snowflakeRuntimeField.name())) {
+                        collectedFields.add(incomingField);
+                        //We need to warn user about left unused columns. So delete used ones.
+                        iterator.remove();
+                        isAdded = true;
+                        completelyDifferent = false;
+                        break;
+                    }
+                }
+                if (!isAdded) {
+                    collectedFields.add(null);
                 }
             }
+
             isFirst = false;
+            if (completelyDifferent) {
+                throw new ComponentException(new DefaultErrorCode(HttpServletResponse.SC_BAD_REQUEST, "errorMessage"),
+                        new ExceptionContextBuilder()
+                                .put("errorMessage", I18N_MESSAGES.getMessage("error.message.differentSchema")).build());
+            }
+
+            if (fields.size() != 0) {
+                String[] names = new String[fields.size()];
+                for (int i = 0; i < fields.size(); i++) {
+                    names[i] = fields.get(i).name();
+                }
+                LOGGER.warn(I18N_MESSAGES.getMessage("warning.message.unusedColumns", Arrays.toString(names)));
+            }
         }
 
         for (int i = 0; i < row.length; i++) {
             Field f = collectedFields.get(i);
-            Schema s = AvroUtils.unwrapIfNullable(f.schema());
-            Object inputValue = input.get(i);
+            if (f == null) {
+                row[i] = remoteTableFields.get(i).getProp(SchemaConstants.TALEND_COLUMN_DEFAULT);
+                continue;
+            }
+            Object inputValue = input.get(f.pos());
+            Schema s = AvroUtils.unwrapIfNullable(remoteTableFields.get(i).schema());
             if (inputValue instanceof String || inputValue == null) {
                 row[i] = input.get(i);
             } else if (AvroUtils.isSameType(s, AvroUtils._date())) {
