@@ -26,6 +26,7 @@ import org.talend.components.api.component.runtime.AbstractBoundedReader;
 import org.talend.components.api.component.runtime.BoundedReader;
 import org.talend.components.api.component.runtime.Reader;
 import org.talend.components.api.component.runtime.Source;
+import org.talend.components.google.avro.RowConverter;
 
 import com.google.api.services.fusiontables.Fusiontables;
 import com.google.api.services.fusiontables.Fusiontables.Query.Sql;
@@ -40,10 +41,22 @@ public class TGoogleFusionTableInputReader extends AbstractBoundedReader<Indexed
 
     private Iterator<List<Object>> rows;
 
+    private IndexedRecord currentRecord;
+
+    /**
+     * Converts row retrieved from data source to Avro format {@link IndexedRecord}
+     */
+    private RowConverter converter;
+
     /**
      * Represents state of this Reader: whether it was started or not
      */
     private boolean started = false;
+
+    /**
+     * Represents state of this Reader: whether it has more records
+     */
+    private boolean hasMore = false;
 
     /**
      * Constructor sets {@link Source} of this {@link Reader}
@@ -72,7 +85,15 @@ public class TGoogleFusionTableInputReader extends AbstractBoundedReader<Indexed
 
     @Override
     public boolean advance() throws IOException {
-        return false;
+        if (!started) {
+            throw new IllegalStateException("Reader wasn't started");
+        }
+        hasMore = rows.hasNext();
+        if (hasMore) {
+            List<Object> row = rows.next();
+            currentRecord = getConverter().convertToAvro(row);
+        }
+        return hasMore;
     }
 
     @Override
@@ -88,6 +109,19 @@ public class TGoogleFusionTableInputReader extends AbstractBoundedReader<Indexed
     @Override
     public TGoogleFusionTableInputSource getCurrentSource() {
         return (TGoogleFusionTableInputSource) super.getCurrentSource();
+    }
+
+    /**
+     * Returns implementation of {@link AvroConverter}, creates it if it doesn't
+     * exist.
+     * 
+     * @return converter
+     */
+    private RowConverter getConverter() {
+        if (converter == null) {
+            converter = new RowConverter(getCurrentSource().getDesignSchema());
+        }
+        return converter;
     }
 
 }

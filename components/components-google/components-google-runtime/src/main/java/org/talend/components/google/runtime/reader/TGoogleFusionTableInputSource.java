@@ -104,9 +104,13 @@ public class TGoogleFusionTableInputSource implements BoundedSource {
         }
         return fusionTables;
     }
-    
+
     String getQuery() {
         return properties.tableProperties.query.getValue();
+    }
+
+    Schema getDesignSchema() {
+        return properties.tableProperties.tableSchema.schema.getValue();
     }
 
     /**
