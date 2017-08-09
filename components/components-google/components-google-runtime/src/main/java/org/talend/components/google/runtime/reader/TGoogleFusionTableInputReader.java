@@ -98,7 +98,13 @@ public class TGoogleFusionTableInputReader extends AbstractBoundedReader<Indexed
 
     @Override
     public IndexedRecord getCurrent() throws NoSuchElementException {
-        return null;
+        if (!started) {
+            throw new NoSuchElementException("Reader wasn't started");
+        }
+        if (!hasMore) {
+            throw new NoSuchElementException("Has no more elements");
+        }
+        return currentRecord;
     }
 
     @Override
