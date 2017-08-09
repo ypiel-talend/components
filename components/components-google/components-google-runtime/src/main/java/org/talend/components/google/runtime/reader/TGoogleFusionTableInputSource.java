@@ -18,7 +18,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.avro.Schema;
-import org.talend.components.api.component.runtime.BoundedReader;
 import org.talend.components.api.component.runtime.BoundedSource;
 import org.talend.components.api.container.RuntimeContainer;
 import org.talend.components.api.properties.ComponentProperties;
@@ -59,8 +58,8 @@ public class TGoogleFusionTableInputSource implements BoundedSource {
     }
 
     @Override
-    public BoundedReader createReader(RuntimeContainer adaptor) {
-        return null;
+    public TGoogleFusionTableInputReader createReader(RuntimeContainer adaptor) {
+        return new TGoogleFusionTableInputReader(this);
     }
 
     @Override
