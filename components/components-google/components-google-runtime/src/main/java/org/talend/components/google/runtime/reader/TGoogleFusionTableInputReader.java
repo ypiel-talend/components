@@ -108,6 +108,14 @@ public class TGoogleFusionTableInputReader extends AbstractBoundedReader<Indexed
     }
 
     @Override
+    public void close() {
+        started = false;
+        currentRecord = null;
+        converter = null;
+        rows = null;
+    }
+
+    @Override
     public Map<String, Object> getReturnValues() {
         return null;
     }
