@@ -14,7 +14,6 @@ package org.talend.components.api.test.performance.example;
 
 import org.databene.contiperf.PerfTest;
 import org.databene.contiperf.Required;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -22,6 +21,9 @@ import org.talend.components.api.test.performance.ContiPerfRuleAdaptor;
 import org.talend.components.api.testcomponent.TestComponentDefinition;
 import org.talend.components.api.testcomponent.TestComponentProperties;
 
+/**
+ * Example of performance test using ContiPerf lib.
+ */
 public class ComponentPropertiesInitializationTest {
 
     @Rule
@@ -30,10 +32,12 @@ public class ComponentPropertiesInitializationTest {
     @Rule
     public ContiPerfRuleAdaptor perfAdaptor = new ContiPerfRuleAdaptor();
 
+    /**
+     * Max and average time is set not to fail the build.
+     */
     @Test
-    @Ignore("This is just an example of how performance tests can be written")
     @PerfTest(invocations = 5, threads = 1)
-    @Required(max = 200, average = 100)
+    @Required(max = 300, average = 150)
     public void test() {
         TestComponentDefinition cd = new TestComponentDefinition();
 
