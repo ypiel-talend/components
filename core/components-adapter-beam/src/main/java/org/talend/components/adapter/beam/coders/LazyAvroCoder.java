@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Type;
-import java.util.HashMap;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,13 +33,15 @@ import org.apache.beam.sdk.coders.DefaultCoder;
 import org.apache.beam.sdk.values.TypeDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.talend.components.adapter.beam.schemaregistry.HashMapSchemaRegistry;
+import org.talend.components.adapter.beam.schemaregistry.SchemaRegistry;
 import org.talend.components.adapter.beam.transform.ConvertToIndexedRecord;
 
 public class LazyAvroCoder<T> extends AtomicCoder<Object> {
 
     private static final Logger LOG = LoggerFactory.getLogger(LazyAvroCoder.class);
 
-    private final static HashMap<String, Schema> schemaRegistry = new HashMap<>();
+    private final static SchemaRegistry schemaRegistry = new HashMapSchemaRegistry();
 
     private final static AtomicInteger count = new AtomicInteger();
 
