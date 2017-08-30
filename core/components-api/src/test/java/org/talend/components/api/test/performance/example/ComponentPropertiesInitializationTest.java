@@ -45,4 +45,16 @@ public class ComponentPropertiesInitializationTest {
         prop.init();
     }
 
+    /**
+     * Test which shows that the time tracking is working. Method test() doesn't show that the performance benchmark
+     * works fine, as the time is always very small. To show that we need some test, which will take more time than the
+     * test() method.
+     */
+    @Test
+    @PerfTest(invocations = 5, threads = 1)
+    @Required(max = 300, average = 150)
+    public void testShowResults() throws InterruptedException {
+        Thread.sleep(150);
+    }
+
 }
