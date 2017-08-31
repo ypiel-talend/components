@@ -1,6 +1,8 @@
 package org.talend.components.snowflake.runtime;
 
 import org.apache.avro.Schema;
+import org.apache.avro.Schema.Field;
+import org.apache.avro.SchemaBuilder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -90,4 +92,27 @@ public class SnowflakeAvroRegistryTest {
         LOGGER.debug(field.getObjectProps().toString());
 
     }
+
+    /**
+     * This test shows, that we can use {@link Field#defaultVal()} even if it was set to null, or real data.
+     */
+    @Test
+    public void testWrap() {
+        Schema schema = SchemaBuilder.builder().record("record").fields().requiredString("column1").endRecord();
+
+        Field field = snowflakeAvroRegistry.wrap("nullableRecord", schema, true, null);
+        Assert.assertEquals("nullableRecord", field.name());
+        Assert.assertNull(field.defaultVal());
+
+        field = snowflakeAvroRegistry.wrap("nullableRecord", schema, false, null);
+        Assert.assertNull(field.defaultVal());
+
+        field = snowflakeAvroRegistry.wrap("nullableRecord", schema, true, "");
+        Assert.assertEquals("", field.defaultVal());
+
+        field = snowflakeAvroRegistry.wrap("nullableRecord", schema, false, 10);
+        Assert.assertEquals(10, field.defaultVal());
+
+    }
+
 }
