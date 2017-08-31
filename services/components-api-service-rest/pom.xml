@@ -6,13 +6,13 @@
     <parent>
         <groupId>org.talend.daikon</groupId>
         <artifactId>service-parent</artifactId>
-        <version>0.14.1</version>
+        <version>0.14.2-SNAPSHOT</version>
     </parent>
 
 
     <groupId>org.talend.components</groupId>
     <artifactId>components-api-service-rest</artifactId>
-    <version>0.16.1</version>
+    <version>0.16.2-SNAPSHOT</version>
 
     <name>Components REST API</name>
 
@@ -20,7 +20,7 @@
         <java.version>1.8</java.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <daikon.version>0.14.1</daikon.version>
+        <daikon.version>0.14.2-SNAPSHOT</daikon.version>
         <components-api-full-example.version>0.2.0</components-api-full-example.version>
     </properties>
 
