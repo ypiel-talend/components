@@ -20,4 +20,9 @@ public class ComponentConstants {
      */
     public static final String LINE_SEPARATOR_REPLACED_TO = "LINE_SEPARATOR_REPLACED_TO";
 
+    /**
+     * Prefix string which mostly used for saving global data with an identifier
+     */
+    public static final String KEY_CONNECTION = "Connection";
+
 }
