@@ -10,15 +10,22 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package org.talend.components.mongodb;
+/**
+ *
+ */
+package org.talend.components.mongodb.common;
 
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.talend.components.service.spring.SpringTestApp;
+import org.talend.components.mongodb.MongoDBConnectionProperties;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = SpringTestApp.class)
-public class SpringtMongoDBTestIT extends MongoDBTestBase {
-    //all test are to be found the parent classes    
+/**
+ * @author user
+ */
+public interface MongoDBProvideConnectionProperties {
+
+    /**
+     * @return the {@link MongoDBConnectionProperties} associated with this
+     * {@link org.talend.components.api.properties.ComponentProperties} object.
+     */
+    MongoDBConnectionProperties getConnectionProperties();
+
 }

@@ -80,7 +80,7 @@ public class TMongoDBConnectionDefinitionTest {
         TMongoDBConnectionDefinition definition = new TMongoDBConnectionDefinition();
         thrown.expect(TalendRuntimeException.class);
         thrown.expectMessage(
-                "WRONG_EXECUTION_ENGINE:{component=tMongoDBConnection, requested=DI_SPARK_STREAMING, available=[DI, BEAM]}");
+                "WRONG_EXECUTION_ENGINE:{component=tMongoDBConnection, requested=DI_SPARK_STREAMING, available=[DI]}");
         definition.getRuntimeInfo(ExecutionEngine.DI_SPARK_STREAMING, null, ConnectorTopology.NONE);
     }
 

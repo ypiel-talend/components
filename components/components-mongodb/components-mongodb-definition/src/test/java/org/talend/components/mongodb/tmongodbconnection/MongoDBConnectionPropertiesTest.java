@@ -13,10 +13,15 @@
 package org.talend.components.mongodb.tmongodbconnection;
 
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.talend.components.mongodb.MongoDBConnectionProperties;
+import org.talend.components.mongodb.MongoDBTestBase;
 import org.talend.daikon.properties.presentation.Form;
 
-public class MongoDBConnectionPropertiesTest {
+public class MongoDBConnectionPropertiesTest extends MongoDBTestBase {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MongoDBConnectionPropertiesTest.class);
 
     /**
      * Checks forms are filled with required widgets
@@ -28,7 +33,7 @@ public class MongoDBConnectionPropertiesTest {
         properties.setupLayout();
 
         Form main = properties.getForm(Form.MAIN);
-        // TODO
+        // ComponentTestUtils.checkSerialize(properties, errorCollector);
     }
 
     /**

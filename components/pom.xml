@@ -35,5 +35,6 @@
         <!-- Slow-building components are built last. -->
         <module>components-salesforce</module>
         <module>components-snowflake</module>
+        <module>components-mongodb</module>
     </modules>
 </project>

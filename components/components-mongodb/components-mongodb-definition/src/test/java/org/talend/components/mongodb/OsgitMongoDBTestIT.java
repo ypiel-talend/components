@@ -26,7 +26,7 @@ import org.talend.components.api.ComponentsPaxExamOptions;
 
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerClass.class)
-public class OsgitMongoDBTestIT extends tMongoDBTestBase {
+public class OsgitMongoDBTestIT extends MongoDBTestBase {
 
     @Configuration
     public Option[] config() {

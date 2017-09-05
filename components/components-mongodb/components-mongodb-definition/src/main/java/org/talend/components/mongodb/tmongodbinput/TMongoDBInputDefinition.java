@@ -10,7 +10,7 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package org.talend.components.mongodb.tmongodbconnection;
+package org.talend.components.mongodb.tmongodbinput;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -18,15 +18,15 @@ import java.util.Set;
 import org.talend.components.api.component.ConnectorTopology;
 import org.talend.components.api.component.runtime.ExecutionEngine;
 import org.talend.components.api.properties.ComponentProperties;
-import org.talend.components.mongodb.MongoDBConnectionProperties;
 import org.talend.components.mongodb.common.MongoDBDefinition;
+import org.talend.daikon.properties.property.Property;
 import org.talend.daikon.runtime.RuntimeInfo;
 
-public class TMongoDBConnectionDefinition extends MongoDBDefinition {
+public class TMongoDBInputDefinition extends MongoDBDefinition {
 
-    public static final String COMPONENT_NAME = "tMongoDBConnection"; //$NON-NLS-1$
+    public static final String COMPONENT_NAME = "tMongoDBInput"; //$NON-NLS-1$
 
-    public TMongoDBConnectionDefinition() {
+    public TMongoDBInputDefinition() {
         super(COMPONENT_NAME);
     }
 
@@ -37,7 +37,7 @@ public class TMongoDBConnectionDefinition extends MongoDBDefinition {
 
     @Override
     public Class<? extends ComponentProperties> getPropertyClass() {
-        return MongoDBConnectionProperties.class;
+        return TMongoDBInputProperties.class;
     }
 
     @Override
@@ -45,12 +45,16 @@ public class TMongoDBConnectionDefinition extends MongoDBDefinition {
             ConnectorTopology connectorTopology) {
         assertEngineCompatibility(engine);
         assertConnectorTopologyCompatibility(connectorTopology);
-        return getCommonRuntimeInfo(SOURCE_OR_SINK_CLASS);
+        return getCommonRuntimeInfo(SOURCE_CLASS);
     }
 
     @Override
     public Set<ConnectorTopology> getSupportedConnectorTopologies() {
-        return EnumSet.of(ConnectorTopology.NONE);
+        return EnumSet.of(ConnectorTopology.OUTGOING);
     }
 
+    @Override
+    public Property[] getReturnProperties() {
+        return new Property[] { RETURN_ERROR_MESSAGE_PROP, RETURN_TOTAL_RECORD_COUNT_PROP };
+    }
 }
