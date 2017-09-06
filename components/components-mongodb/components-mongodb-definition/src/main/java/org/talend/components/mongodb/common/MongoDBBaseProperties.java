@@ -13,6 +13,10 @@
 
 package org.talend.components.mongodb.common;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.avro.Schema;
 import org.talend.components.api.component.Connector;
 import org.talend.components.api.component.PropertyPathConnector;
 import org.talend.components.common.FixedConnectorsComponentProperties;
@@ -57,6 +61,16 @@ public abstract class MongoDBBaseProperties extends FixedConnectorsComponentProp
         for (Form childForm : connection.getForms()) {
             connection.refreshLayout(childForm);
         }
+    }
+
+    protected List<String> getFieldNames(Schema schema) {
+        List<String> fieldNames = new ArrayList<>();
+        if (schema != null) {
+            for (Schema.Field f : schema.getFields()) {
+                fieldNames.add(f.name());
+            }
+        }
+        return fieldNames;
     }
 
 }

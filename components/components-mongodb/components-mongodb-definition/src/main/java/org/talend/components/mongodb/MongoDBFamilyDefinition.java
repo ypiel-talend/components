@@ -18,6 +18,7 @@ import org.talend.components.api.Constants;
 import org.talend.components.mongodb.tmongodbconnection.TMongoDBConnectionDefinition;
 import org.talend.components.mongodb.tmongodbinput.TMongoDBInputDefinition;
 import org.talend.components.mongodb.tmongodboutput.TMongoDBOutputDefinition;
+import org.talend.components.mongodb.tmongodbrow.TMongoDBRowDefinition;
 import org.talend.components.mongodb.wizard.MongoDBWizardDefinition;
 
 import com.google.auto.service.AutoService;
@@ -34,8 +35,12 @@ public class MongoDBFamilyDefinition extends AbstractComponentFamilyDefinition i
     public static final String NAME = "MongoDB";
 
     public MongoDBFamilyDefinition() {
-        super(NAME, new TMongoDBConnectionDefinition(), new TMongoDBInputDefinition(), new TMongoDBOutputDefinition(),
-                new MongoDBWizardDefinition());
+        super(NAME, //
+                new TMongoDBConnectionDefinition(), //
+                new TMongoDBInputDefinition(), //
+                new TMongoDBOutputDefinition(), //
+                new TMongoDBRowDefinition(), //
+                new MongoDBWizardDefinition());//
 
     }
 

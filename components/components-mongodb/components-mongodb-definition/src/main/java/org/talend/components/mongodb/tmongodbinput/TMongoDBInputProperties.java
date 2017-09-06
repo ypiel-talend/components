@@ -87,27 +87,7 @@ public class TMongoDBInputProperties extends MongoDBBaseProperties {
     }
 
     public void beforeMapping() {
-        List<String> fieldNames = getFieldNames(collection.main.schema.getValue());
-        if (fieldNames.size() > 0) {
-            List<String> oldColumnList = mapping.columnName.getValue();
-            List<String> oldNodePaths = mapping.nodePath.getValue();
-            List<String> newNodePaths = new ArrayList<>();
-            for (int i = 0; i < fieldNames.size(); i++) {
-                String fieldName = fieldNames.get(i);
-                if (oldColumnList.contains(fieldName)) {
-                    int index = oldColumnList.indexOf(fieldName);
-                    if (index > oldNodePaths.size()) {
-                        newNodePaths.add(null);
-                    } else {
-                        newNodePaths.add(oldNodePaths.get(index));
-                    }
-                } else {
-                    newNodePaths.add(null);
-                }
-            }
-            mapping.columnName.setValue(fieldNames);
-            mapping.nodePath.setValue(newNodePaths);
-        }
+        mapping.updateTable(getFieldNames(collection.main.schema.getValue()));
     }
 
     @Override
@@ -164,13 +144,4 @@ public class TMongoDBInputProperties extends MongoDBBaseProperties {
         refreshLayout(getForm(Form.ADVANCED));
     }
 
-    protected List<String> getFieldNames(Schema schema) {
-        List<String> fieldNames = new ArrayList<>();
-        if (schema != null) {
-            for (Schema.Field f : schema.getFields()) {
-                fieldNames.add(f.name());
-            }
-        }
-        return fieldNames;
-    }
 }

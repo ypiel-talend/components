@@ -15,6 +15,7 @@ package org.talend.components.mongodb.common;
 
 import static org.talend.daikon.properties.property.PropertyFactory.newProperty;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.reflect.TypeLiteral;
@@ -55,8 +56,51 @@ public class NodePathMappingTable extends BasedOnSchemaTable {
         }
     }
 
-    public void afterColumnName() {
+    public void updateTable(List<String> fieldNames) {
+        if (fieldNames != null && fieldNames.size() > 0) {
+            Object oldColumnList = columnName.getValue();
+            Object oldNodePaths = nodePath.getValue();
+            Object oldRemoveNullField = null;
 
+            if (hasRemoveNull) {
+                oldRemoveNullField = removeNullField.getValue();
+            }
+
+            List<String> newNodePaths = new ArrayList<>();
+            List<Boolean> newRemoveNullFields = new ArrayList<>();
+            for (int i = 0; i < fieldNames.size(); i++) {
+                String fieldName = fieldNames.get(i);
+                if (oldColumnList != null && oldColumnList instanceof List) {
+                    int index = ((List<String>) oldColumnList).indexOf(fieldName);
+                    if (index > -1) {
+                        if (oldNodePaths != null && oldNodePaths instanceof List) {
+                            if (index > ((List<String>) oldNodePaths).size()) {
+                                newNodePaths.add(null);
+                            } else {
+                                newNodePaths.add(((List<String>) oldNodePaths).get(index));
+                            }
+                        }
+                        if (hasRemoveNull && oldRemoveNullField != null && oldRemoveNullField instanceof List) {
+                            if (index > ((List<Boolean>) oldRemoveNullField).size()) {
+                                newRemoveNullFields.add(false);
+                            } else {
+                                newRemoveNullFields.add(((List<Boolean>) oldRemoveNullField).get(index));
+                            }
+                        }
+                    }
+                } else {
+                    newNodePaths.add(null);
+                    if (hasRemoveNull) {
+                        newRemoveNullFields.add(false);
+                    }
+                }
+            }
+            columnName.setValue(fieldNames);
+            nodePath.setValue(newNodePaths);
+            if (hasRemoveNull) {
+                removeNullField.setValue(newRemoveNullFields);
+            }
+        }
     }
 
 }

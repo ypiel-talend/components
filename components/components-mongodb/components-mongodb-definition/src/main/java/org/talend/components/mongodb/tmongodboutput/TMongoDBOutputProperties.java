@@ -18,12 +18,9 @@ import static org.talend.daikon.properties.property.PropertyFactory.newBoolean;
 import static org.talend.daikon.properties.property.PropertyFactory.newEnum;
 import static org.talend.daikon.properties.property.PropertyFactory.newProperty;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
-import org.apache.avro.Schema;
 import org.talend.components.api.component.ISchemaListener;
 import org.talend.components.api.component.PropertyPathConnector;
 import org.talend.components.mongodb.MongoDBConnectionProperties;
@@ -96,37 +93,8 @@ public class TMongoDBOutputProperties extends MongoDBBaseProperties {
         });
     }
 
-    // TODO fix duplicate code
     public void beforeMapping() {
-        List<String> fieldNames = getFieldNames(collection.main.schema.getValue());
-        if (fieldNames.size() > 0) {
-            List<String> oldColumnList = mapping.columnName.getValue();
-            List<String> oldNodePaths = mapping.nodePath.getValue();
-            List<Boolean> oldRemoveNullField = mapping.removeNullField.getValue();
-            List<String> newNodePaths = new ArrayList<>();
-            List<Boolean> newRemoveNullField = new ArrayList<>();
-            for (int i = 0; i < fieldNames.size(); i++) {
-                String fieldName = fieldNames.get(i);
-                if (oldColumnList.contains(fieldName)) {
-                    int index = oldColumnList.indexOf(fieldName);
-                    if (index > oldNodePaths.size()) {
-                        newNodePaths.add(null);
-                    } else {
-                        newNodePaths.add(oldNodePaths.get(index));
-                    }
-                    if (index > oldRemoveNullField.size()) {
-                        newRemoveNullField.add(false);
-                    } else {
-                        newRemoveNullField.add(oldRemoveNullField.get(index));
-                    }
-                } else {
-                    newNodePaths.add(null);
-                    newRemoveNullField.add(false);
-                }
-            }
-            mapping.columnName.setValue(fieldNames);
-            mapping.nodePath.setValue(newNodePaths);
-        }
+        mapping.updateTable(getFieldNames(collection.main.schema.getValue()));
     }
 
     @Override
@@ -181,13 +149,4 @@ public class TMongoDBOutputProperties extends MongoDBBaseProperties {
         refreshLayout(getForm(Form.ADVANCED));
     }
 
-    protected List<String> getFieldNames(Schema schema) {
-        List<String> fieldNames = new ArrayList<>();
-        if (schema != null) {
-            for (Schema.Field f : schema.getFields()) {
-                fieldNames.add(f.name());
-            }
-        }
-        return fieldNames;
-    }
 }
