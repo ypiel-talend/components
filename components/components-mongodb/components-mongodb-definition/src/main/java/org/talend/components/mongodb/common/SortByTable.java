@@ -15,12 +15,12 @@ package org.talend.components.mongodb.common;
 
 import static org.talend.daikon.properties.property.PropertyFactory.newProperty;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang3.reflect.TypeLiteral;
 import org.talend.components.common.BasedOnSchemaTable;
 import org.talend.daikon.properties.presentation.Form;
+import org.talend.daikon.properties.presentation.Widget;
 import org.talend.daikon.properties.property.Property;
 
 public class SortByTable extends BasedOnSchemaTable {
@@ -38,13 +38,13 @@ public class SortByTable extends BasedOnSchemaTable {
     public void setupLayout() {
         super.setupLayout();
         Form mainForm = getForm(Form.MAIN);
-        mainForm.addColumn(order);
+        mainForm.addColumn(Widget.widget(order).setWidgetType(Widget.ENUMERATION_WIDGET_TYPE));
     }
 
     @Override
     public void setupProperties() {
         super.setupProperties();
-        order.setPossibleValues(Arrays.asList("asc", "desc"));
+        order.setPossibleValues("asc", "desc");
     }
 
 }

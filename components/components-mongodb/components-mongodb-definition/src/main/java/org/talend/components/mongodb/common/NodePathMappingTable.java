@@ -27,10 +27,22 @@ public class NodePathMappingTable extends BasedOnSchemaTable {
     private static final TypeLiteral<List<String>> LIST_STRING_TYPE = new TypeLiteral<List<String>>() {// empty
     };
 
+    private static final TypeLiteral<List<Boolean>> LIST_BOOLEAN_TYPE = new TypeLiteral<List<Boolean>>() {// empty
+    };
+
     public Property<List<String>> nodePath = newProperty(LIST_STRING_TYPE, "nodePath");
+
+    public Property<List<Boolean>> removeNullField = newProperty(LIST_BOOLEAN_TYPE, "removeNullField");
+
+    private boolean hasRemoveNull;
 
     public NodePathMappingTable(String name) {
         super(name);
+    }
+
+    public NodePathMappingTable(String name, boolean hasRemoveNull) {
+        super(name);
+        this.hasRemoveNull = hasRemoveNull;
     }
 
     @Override
@@ -38,6 +50,13 @@ public class NodePathMappingTable extends BasedOnSchemaTable {
         super.setupLayout();
         Form mainForm = getForm(Form.MAIN);
         mainForm.addColumn(nodePath);
+        if (hasRemoveNull) {
+            mainForm.addColumn(removeNullField);
+        }
+    }
+
+    public void afterColumnName() {
+
     }
 
 }

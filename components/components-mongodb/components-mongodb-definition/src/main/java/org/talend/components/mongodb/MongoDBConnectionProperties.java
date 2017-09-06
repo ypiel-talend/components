@@ -20,8 +20,6 @@ import static org.talend.daikon.properties.property.PropertyFactory.newBoolean;
 import static org.talend.daikon.properties.property.PropertyFactory.newEnum;
 import static org.talend.daikon.properties.property.PropertyFactory.newString;
 
-import java.util.Arrays;
-
 import org.talend.components.api.properties.ComponentPropertiesImpl;
 import org.talend.components.api.properties.ComponentReferenceProperties;
 import org.talend.components.common.KerberosProperties;
@@ -178,13 +176,13 @@ public class MongoDBConnectionProperties extends ComponentPropertiesImpl {
 
                 DBVersion version = dbVersion.getValue();
                 if (DBVersion.MONGODB_2_5_X.equals(version)) {
-                    authenticationMechanism.setPossibleValues(
-                            Arrays.asList(AuthenticationMechanism.KERBEROS_MEC, AuthenticationMechanism.KERBEROS_MEC));
+                    authenticationMechanism.setPossibleValues(AuthenticationMechanism.KERBEROS_MEC,
+                            AuthenticationMechanism.KERBEROS_MEC);
                 } else if (DBVersion.MONGODB_2_6_X.equals(version)) {
-                    authenticationMechanism.setPossibleValues(Arrays.asList(AuthenticationMechanism.KERBEROS_MEC,
-                            AuthenticationMechanism.KERBEROS_MEC, AuthenticationMechanism.PLAIN_MEC));
+                    authenticationMechanism.setPossibleValues(AuthenticationMechanism.KERBEROS_MEC,
+                            AuthenticationMechanism.KERBEROS_MEC, AuthenticationMechanism.PLAIN_MEC);
                 } else {
-                    authenticationMechanism.setPossibleValues(Arrays.asList(AuthenticationMechanism.values()));
+                    authenticationMechanism.setPossibleValues(AuthenticationMechanism.values());
                 }
 
                 form.getWidget(replicaSetTable).setVisible(useReplicaSet.getValue());

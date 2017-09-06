@@ -10,7 +10,7 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package org.talend.components.mongodb.tmongodbinput;
+package org.talend.components.mongodb.tmongodboutput;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -22,34 +22,43 @@ import org.talend.components.mongodb.common.MongoDBDefinition;
 import org.talend.daikon.properties.property.Property;
 import org.talend.daikon.runtime.RuntimeInfo;
 
-public class TMongoDBInputDefinition extends MongoDBDefinition {
+public class TMongoDBOutputDefinition extends MongoDBDefinition {
 
-    public static final String COMPONENT_NAME = "tMongoDBInput"; //$NON-NLS-1$
+    public static final String COMPONENT_NAME = "tMongoDBOutput"; //$NON-NLS-1$
 
-    public TMongoDBInputDefinition() {
+    public TMongoDBOutputDefinition() {
         super(COMPONENT_NAME);
     }
 
     @Override
-    public boolean isStartable() {
+    public boolean isSchemaAutoPropagate() {
         return true;
     }
 
     @Override
+    public String getPartitioning() {
+        return AUTO;
+    }
+
+    @Override
     public Class<? extends ComponentProperties> getPropertyClass() {
-        return TMongoDBInputProperties.class;
+        return TMongoDBOutputProperties.class;
     }
 
     @Override
     public RuntimeInfo getRuntimeInfo(ExecutionEngine engine, ComponentProperties properties,
             ConnectorTopology connectorTopology) {
         assertEngineCompatibility(engine);
-        return getCommonRuntimeInfo(SOURCE_CLASS);
+        if (connectorTopology == ConnectorTopology.INCOMING || connectorTopology == ConnectorTopology.INCOMING_AND_OUTGOING) {
+            return getCommonRuntimeInfo(SINK_CLASS);
+        } else {
+            return null;
+        }
     }
 
     @Override
     public Set<ConnectorTopology> getSupportedConnectorTopologies() {
-        return EnumSet.of(ConnectorTopology.OUTGOING);
+        return EnumSet.of(ConnectorTopology.INCOMING, ConnectorTopology.INCOMING_AND_OUTGOING);
     }
 
     @Override
