@@ -23,6 +23,9 @@ import org.talend.daikon.properties.presentation.Form;
 import org.talend.daikon.properties.presentation.Widget;
 import org.talend.daikon.properties.property.Property;
 
+/**
+ * Columns table properties which used to sort query data
+ */
 public class SortByTable extends BasedOnSchemaTable {
 
     private static final TypeLiteral<List<String>> LIST_STRING_TYPE = new TypeLiteral<List<String>>() {// empty

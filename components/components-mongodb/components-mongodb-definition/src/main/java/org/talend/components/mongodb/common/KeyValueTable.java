@@ -22,6 +22,9 @@ import org.talend.components.api.properties.ComponentPropertiesImpl;
 import org.talend.daikon.properties.presentation.Form;
 import org.talend.daikon.properties.property.Property;
 
+/**
+ * Key value table properties
+ */
 public class KeyValueTable extends ComponentPropertiesImpl {
 
     private static final TypeLiteral<List<String>> REPLICA_KEY = new TypeLiteral<List<String>>() {// empty

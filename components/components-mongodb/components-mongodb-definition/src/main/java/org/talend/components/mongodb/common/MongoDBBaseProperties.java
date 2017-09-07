@@ -23,6 +23,9 @@ import org.talend.components.common.FixedConnectorsComponentProperties;
 import org.talend.components.mongodb.MongoDBConnectionProperties;
 import org.talend.daikon.properties.presentation.Form;
 
+/**
+ * Basic mongodb properties for some common properties definition
+ */
 public abstract class MongoDBBaseProperties extends FixedConnectorsComponentProperties
         implements MongoDBProvideConnectionProperties {
 
@@ -63,6 +66,9 @@ public abstract class MongoDBBaseProperties extends FixedConnectorsComponentProp
         }
     }
 
+    /**
+     * Get the column name list from the schema
+     */
     public static List<String> getFieldNames(Schema schema) {
         List<String> fieldNames = new ArrayList<>();
         if (schema != null) {

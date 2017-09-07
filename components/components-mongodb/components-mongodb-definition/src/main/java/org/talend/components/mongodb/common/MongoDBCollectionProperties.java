@@ -34,6 +34,9 @@ import org.talend.daikon.properties.presentation.Widget;
 import org.talend.daikon.properties.property.StringProperty;
 import org.talend.daikon.sandbox.SandboxedInstance;
 
+/**
+ * This properties is for collection select area
+ */
 public class MongoDBCollectionProperties extends ComponentPropertiesImpl {
 
     public MongoDBConnectionProperties connection = new MongoDBConnectionProperties("connection");

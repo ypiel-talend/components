@@ -22,6 +22,9 @@ import org.talend.components.api.properties.ComponentPropertiesImpl;
 import org.talend.daikon.properties.presentation.Form;
 import org.talend.daikon.properties.property.Property;
 
+/**
+ * Aggregation stages table properties
+ */
 public class AggregationStagesTable extends ComponentPropertiesImpl {
 
     private static final TypeLiteral<List<String>> LIST_STRING_TYPE = new TypeLiteral<List<String>>() {// empty

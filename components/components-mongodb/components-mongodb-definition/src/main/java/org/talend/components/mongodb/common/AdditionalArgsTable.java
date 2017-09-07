@@ -22,6 +22,9 @@ import org.talend.components.api.properties.ComponentPropertiesImpl;
 import org.talend.daikon.properties.presentation.Form;
 import org.talend.daikon.properties.property.Property;
 
+/**
+ * Additional arguments table properties
+ */
 public class AdditionalArgsTable extends ComponentPropertiesImpl {
 
     private static final TypeLiteral<List<String>> REPLICA_ARGUMENT = new TypeLiteral<List<String>>() {// empty

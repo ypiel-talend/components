@@ -35,6 +35,7 @@ public class NodePathMappingTable extends BasedOnSchemaTable {
 
     public Property<List<Boolean>> removeNullField = newProperty(LIST_BOOLEAN_TYPE, "removeNullField");
 
+    // whether include removeNullField in mapping table
     private boolean hasRemoveNull;
 
     public NodePathMappingTable(String name) {
@@ -56,6 +57,9 @@ public class NodePathMappingTable extends BasedOnSchemaTable {
         }
     }
 
+    /**
+     * Update table when schema changed
+     */
     public void updateTable(List<String> fieldNames) {
         if (fieldNames != null && fieldNames.size() > 0) {
             Object oldColumnList = columnName.getValue();

@@ -17,9 +17,6 @@ package org.talend.components.mongodb.common;
 
 import org.talend.components.mongodb.MongoDBConnectionProperties;
 
-/**
- * @author user
- */
 public interface MongoDBProvideConnectionProperties {
 
     /**

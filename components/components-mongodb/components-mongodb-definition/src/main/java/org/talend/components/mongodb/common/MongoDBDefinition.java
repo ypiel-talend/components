@@ -23,6 +23,9 @@ import org.talend.daikon.runtime.RuntimeInfo;
 import org.talend.daikon.runtime.RuntimeUtil;
 import org.talend.daikon.sandbox.SandboxedInstance;
 
+/**
+ * Common definition for mongodb components
+ */
 public abstract class MongoDBDefinition extends AbstractComponentDefinition {
 
     public static final boolean USE_CURRENT_JVM_PROPS = true;
