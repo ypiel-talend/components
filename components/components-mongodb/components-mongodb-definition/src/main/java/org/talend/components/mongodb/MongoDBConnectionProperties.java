@@ -107,6 +107,8 @@ public class MongoDBConnectionProperties extends ComponentPropertiesImpl {
     @Override
     public void setupProperties() {
         super.setupProperties();
+        dbVersion.setValue(DBVersion.MONGODB_3_2_X);
+        authenticationMechanism.setValue(AuthenticationMechanism.NEGOTIATE_MEC);
     }
 
     @Override

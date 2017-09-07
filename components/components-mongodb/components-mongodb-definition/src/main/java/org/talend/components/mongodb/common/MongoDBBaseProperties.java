@@ -63,7 +63,7 @@ public abstract class MongoDBBaseProperties extends FixedConnectorsComponentProp
         }
     }
 
-    protected List<String> getFieldNames(Schema schema) {
+    public static List<String> getFieldNames(Schema schema) {
         List<String> fieldNames = new ArrayList<>();
         if (schema != null) {
             for (Schema.Field f : schema.getFields()) {

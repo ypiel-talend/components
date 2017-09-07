@@ -67,7 +67,7 @@ public enum MongoDBErrorCodes implements ErrorCode {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("NetSuiteErrorCode{");
+        final StringBuilder sb = new StringBuilder("MongoDBErrorCode{");
         sb.append("code='").append(code).append('\'');
         sb.append(", httpStatusCode=").append(code);
         sb.append(", expectedContextEntries=").append(contextEntries);

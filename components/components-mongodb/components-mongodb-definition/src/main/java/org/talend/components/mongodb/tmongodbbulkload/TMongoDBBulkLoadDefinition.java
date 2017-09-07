@@ -10,7 +10,7 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package org.talend.components.mongodb.tmongodbrow;
+package org.talend.components.mongodb.tmongodbbulkload;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -21,11 +21,11 @@ import org.talend.components.api.properties.ComponentProperties;
 import org.talend.components.mongodb.common.MongoDBDefinition;
 import org.talend.daikon.runtime.RuntimeInfo;
 
-public class TMongoDBRowDefinition extends MongoDBDefinition {
+public class TMongoDBBulkLoadDefinition extends MongoDBDefinition {
 
-    public static final String COMPONENT_NAME = "tMongoDBRow"; //$NON-NLS-1$
+    public static final String COMPONENT_NAME = "tMongoDBBulkLoad"; //$NON-NLS-1$
 
-    public TMongoDBRowDefinition() {
+    public TMongoDBBulkLoadDefinition() {
         super(COMPONENT_NAME);
     }
 
@@ -35,30 +35,20 @@ public class TMongoDBRowDefinition extends MongoDBDefinition {
     }
 
     @Override
-    public boolean isSchemaAutoPropagate() {
-        return true;
-    }
-
-    @Override
     public Class<? extends ComponentProperties> getPropertyClass() {
-        return TMongoDBRowProperties.class;
+        return TMongoDBBulkLoadProperties.class;
     }
 
     @Override
     public RuntimeInfo getRuntimeInfo(ExecutionEngine engine, ComponentProperties properties,
             ConnectorTopology connectorTopology) {
         assertEngineCompatibility(engine);
-        // TODO recheck when work on runtime part
-        if (connectorTopology == ConnectorTopology.INCOMING || connectorTopology == ConnectorTopology.NONE) {
-            return getCommonRuntimeInfo(SINK_CLASS);
-        } else {
-            return null;
-        }
+        return getCommonRuntimeInfo(SOURCE_OR_SINK_CLASS);
     }
 
     @Override
     public Set<ConnectorTopology> getSupportedConnectorTopologies() {
-        return EnumSet.of(ConnectorTopology.INCOMING, ConnectorTopology.NONE);
+        return EnumSet.of(ConnectorTopology.NONE);
     }
 
 }

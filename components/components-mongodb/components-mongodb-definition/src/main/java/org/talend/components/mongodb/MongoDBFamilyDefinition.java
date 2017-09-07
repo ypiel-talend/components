@@ -15,6 +15,8 @@ package org.talend.components.mongodb;
 import org.talend.components.api.AbstractComponentFamilyDefinition;
 import org.talend.components.api.ComponentInstaller;
 import org.talend.components.api.Constants;
+import org.talend.components.mongodb.tmongodbbulkload.TMongoDBBulkLoadDefinition;
+import org.talend.components.mongodb.tmongodbclose.TMongoDBCloseDefinition;
 import org.talend.components.mongodb.tmongodbconnection.TMongoDBConnectionDefinition;
 import org.talend.components.mongodb.tmongodbinput.TMongoDBInputDefinition;
 import org.talend.components.mongodb.tmongodboutput.TMongoDBOutputDefinition;
@@ -40,6 +42,8 @@ public class MongoDBFamilyDefinition extends AbstractComponentFamilyDefinition i
                 new TMongoDBInputDefinition(), //
                 new TMongoDBOutputDefinition(), //
                 new TMongoDBRowDefinition(), //
+                new TMongoDBBulkLoadDefinition(), //
+                new TMongoDBCloseDefinition(), //
                 new MongoDBWizardDefinition());//
 
     }
