@@ -24,7 +24,6 @@ import org.talend.components.api.properties.ComponentPropertiesImpl;
 import org.talend.components.api.properties.ComponentReferenceProperties;
 import org.talend.components.common.KerberosProperties;
 import org.talend.components.common.UserPasswordProperties;
-import org.talend.components.mongodb.common.MongoDBRuntimeSourceOrSink;
 import org.talend.components.mongodb.common.ReplicaSetTable;
 import org.talend.components.mongodb.tmongodbconnection.TMongoDBConnectionDefinition;
 import org.talend.daikon.i18n.GlobalI18N;

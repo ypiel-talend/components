@@ -1,15 +1,15 @@
-//  ============================================================================
+// ============================================================================
 //
-//  Copyright (C) 2006-2017 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2017 Talend Inc. - www.talend.com
 //
-//  This source code is available under agreement available at
-//  %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
+// This source code is available under agreement available at
+// %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
 //
-//  You should have received a copy of the agreement
-//  along with this program; if not, write to Talend SA
-//  9 rue Pages 92150 Suresnes, France
+// You should have received a copy of the agreement
+// along with this program; if not, write to Talend SA
+// 9 rue Pages 92150 Suresnes, France
 //
-//  ============================================================================
+// ============================================================================
 
 package org.talend.components.mongodb.wizard;
 
@@ -19,15 +19,23 @@ import static org.talend.components.mongodb.common.MongoDBDefinition.getSandboxe
 import static org.talend.daikon.properties.presentation.Widget.widget;
 import static org.talend.daikon.properties.property.PropertyFactory.newProperty;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.avro.Schema;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.TypeLiteral;
 import org.talend.components.api.properties.ComponentPropertiesImpl;
+import org.talend.components.mongodb.MongoDBCollectionProperties;
 import org.talend.components.mongodb.MongoDBConnectionProperties;
-import org.talend.components.mongodb.common.MongoDBCollectionProperties;
-import org.talend.components.mongodb.common.MongoDBRuntimeSourceOrSink;
+import org.talend.components.mongodb.MongoDBRuntimeSourceOrSink;
 import org.talend.daikon.NamedThing;
+import org.talend.daikon.SimpleNamedThing;
+import org.talend.daikon.avro.AvroUtils;
+import org.talend.daikon.i18n.GlobalI18N;
+import org.talend.daikon.i18n.I18nMessages;
 import org.talend.daikon.properties.Properties;
 import org.talend.daikon.properties.ValidationResult;
 import org.talend.daikon.properties.presentation.Form;
@@ -38,20 +46,38 @@ import org.talend.daikon.sandbox.SandboxedInstance;
 
 public class MongoDBCollectionListProperties extends ComponentPropertiesImpl {
 
+    protected static final I18nMessages MESSAGES = GlobalI18N.getI18nMessageProvider()
+            .getI18nMessages(MongoDBCollectionListProperties.class);
+
+    public static final String FORM_DATABASE = "Database";
+
+    public static final String FORM_COLLECTION = "Collection";
+
     public MongoDBConnectionProperties connection = new MongoDBConnectionProperties("connection");
 
     private String repositoryLocation;
 
-    private List<NamedThing> collectionNames;
+    public List<NamedThing> databaseNames;
+
+    public List<NamedThing> collectionNames;
 
     //
     // Properties
     //
+    public Property<List<NamedThing>> selectedDatabaseNames = newProperty(new TypeLiteral<List<NamedThing>>() {
+    }, "selectedDatabaseNames"); //$NON-NLS-1$
+
     public Property<List<NamedThing>> selectedCollectionNames = newProperty(new TypeLiteral<List<NamedThing>>() {
     }, "selectedCollectionNames"); //$NON-NLS-1$
 
     public MongoDBCollectionListProperties(String name) {
         super(name);
+    }
+
+    public MongoDBCollectionListProperties setConnection(MongoDBConnectionProperties connection) {
+        connection.database.setRequired(false);
+        this.connection = connection;
+        return this;
     }
 
     public MongoDBCollectionListProperties setRepositoryLocation(String location) {
@@ -66,27 +92,57 @@ public class MongoDBCollectionListProperties extends ComponentPropertiesImpl {
     @Override
     public void setupLayout() {
         super.setupLayout();
-        Form collectionForm = Form.create(this, Form.MAIN);
+
+        Form databaseForm = Form.create(this, FORM_DATABASE);
+        // Since this is a repeating property it has a list of values
+        databaseForm.addRow(widget(selectedDatabaseNames).setWidgetType(Widget.NAME_SELECTION_AREA_WIDGET_TYPE));
+        refreshLayout(databaseForm);
+
+        Form collectionForm = Form.create(this, FORM_COLLECTION);
         // Since this is a repeating property it has a list of values
         collectionForm.addRow(widget(selectedCollectionNames).setWidgetType(Widget.NAME_SELECTION_AREA_WIDGET_TYPE));
         refreshLayout(collectionForm);
     }
 
-    public void beforeFormPresentMain() throws Exception {
+    /**
+     * Show database list
+     */
+    public void beforeFormPresentDatabase() throws Exception {
         try (SandboxedInstance sandboxedInstance = getSandboxedInstance(SOURCE_OR_SINK_CLASS, USE_CURRENT_JVM_PROPS)) {
-            MongoDBRuntimeSourceOrSink ss = (MongoDBRuntimeSourceOrSink) sandboxedInstance.getInstance();
-            collectionNames = ss.getSchemaNames(null);
-            selectedCollectionNames.setPossibleValues(collectionNames);
-            getForm(Form.MAIN).setAllowBack(true);
-            getForm(Form.MAIN).setAllowFinish(true);
+            if (StringUtils.isEmpty(connection.database.getValue())) {
+                MongoDBRuntimeSourceOrSink ss = (MongoDBRuntimeSourceOrSink) sandboxedInstance.getInstance();
+                ss.initialize(null, connection);
+                databaseNames = ss.getDatabaseNames(null);
+            } else {
+                NamedThing dbName = new SimpleNamedThing(connection.database.getValue(), connection.database.getValue());
+                databaseNames = Arrays.asList(dbName);
+            }
+            selectedDatabaseNames.setPossibleValues(databaseNames);
+            getForm(FORM_DATABASE).setAllowBack(true);
+            getForm(FORM_DATABASE).setAllowForward(true);
+            getForm(FORM_DATABASE).setAllowFinish(true);
         }
     }
 
-    public ValidationResult afterFormFinishMain(Repository<Properties> repo) throws Exception {
+    /**
+     * Show collections list for specify database
+     */
+    public void beforeFormPresentCollection() throws Exception {
+        try (SandboxedInstance sandboxedInstance = getSandboxedInstance(SOURCE_OR_SINK_CLASS, USE_CURRENT_JVM_PROPS)) {
+            MongoDBRuntimeSourceOrSink ss = (MongoDBRuntimeSourceOrSink) sandboxedInstance.getInstance();
+            ss.initialize(null, connection);
+            collectionNames = ss.getCollectionNames(null, selectedDatabaseNames.getValue());
+            selectedCollectionNames.setPossibleValues(collectionNames);
+            getForm(FORM_COLLECTION).setAllowBack(true);
+            getForm(FORM_COLLECTION).setAllowFinish(true);
+        }
+    }
+
+    public ValidationResult afterFormFinishCollection(Repository<Properties> repo) throws Exception {
         try (SandboxedInstance sandboxedInstance = getSandboxedInstance(SOURCE_OR_SINK_CLASS, USE_CURRENT_JVM_PROPS)) {
 
             MongoDBRuntimeSourceOrSink ss = (MongoDBRuntimeSourceOrSink) sandboxedInstance.getInstance();
-            ss.initialize(null, this);
+            ss.initialize(null, connection);
             ValidationResult vr = ss.validate(null);
             if (vr.getStatus() != ValidationResult.Result.OK) {
                 return vr;
@@ -94,16 +150,25 @@ public class MongoDBCollectionListProperties extends ComponentPropertiesImpl {
 
             String connRepLocation = repo.storeProperties(connection, connection.name.getValue(), repositoryLocation, null);
 
-            for (NamedThing nl : selectedCollectionNames.getValue()) {
-                String collectionName = nl.getName();
-                MongoDBCollectionProperties modProps = new MongoDBCollectionProperties(collectionName);
-                modProps.connection = connection;
-                modProps.init();
-                Schema schema = ss.getEndpointSchema(null, collectionName);
-                modProps.collectionName.setValue(collectionName);
-                modProps.main.schema.setValue(schema);
-                repo.storeProperties(modProps, nl.getName(), connRepLocation, "main.schema");
+            Map<String, List<String>> dbCollections = ss.getDBCollectionMapping(selectedCollectionNames);
+
+            Set<String> dbNames = dbCollections.keySet();
+            for (String dbName : dbNames) {
+                connection.database.setValue(dbName);
+                String dbRepLocation =repo.storeProperties(connection, dbName, connRepLocation, null);
+                for (String collectionName : dbCollections.get(dbName)) {
+                    MongoDBCollectionProperties modProps = new MongoDBCollectionProperties(collectionName);
+                    modProps.connection = connection;
+                    modProps.init();
+                    // Schema schema = ss.getEndpointSchema(null, collectionName);
+                    // FIXME
+                    Schema schema = AvroUtils.createEmptySchema();
+                    modProps.collectionName.setValue(collectionName);
+                    modProps.main.schema.setValue(schema);
+                    repo.storeProperties(modProps, collectionName, dbRepLocation, "main.schema");
+                }
             }
+
             return ValidationResult.OK;
         }
     }

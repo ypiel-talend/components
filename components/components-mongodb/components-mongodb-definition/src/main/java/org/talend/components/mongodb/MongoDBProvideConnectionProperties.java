@@ -10,9 +10,19 @@
 //  9 rue Pages 92150 Suresnes, France
 //
 //  ============================================================================
-package org.talend.components.mongodb.common;
+/**
+ *
+ */
+package org.talend.components.mongodb;
 
-import org.talend.components.api.component.runtime.SourceOrSink;
+import org.talend.components.mongodb.MongoDBConnectionProperties;
 
-public interface MongoDBRuntimeSourceOrSink extends SourceOrSink {
+public interface MongoDBProvideConnectionProperties {
+
+    /**
+     * @return the {@link MongoDBConnectionProperties} associated with this
+     * {@link org.talend.components.api.properties.ComponentProperties} object.
+     */
+    MongoDBConnectionProperties getConnectionProperties();
+
 }

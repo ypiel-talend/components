@@ -27,7 +27,7 @@ import org.talend.components.common.SchemaProperties;
 import org.talend.components.mongodb.MongoDBConnectionProperties;
 import org.talend.components.mongodb.common.FunctionParametersTable;
 import org.talend.components.mongodb.common.KeyValueTable;
-import org.talend.components.mongodb.common.MongoDBProvideConnectionProperties;
+import org.talend.components.mongodb.MongoDBProvideConnectionProperties;
 import org.talend.daikon.properties.presentation.Form;
 import org.talend.daikon.properties.presentation.Widget;
 import org.talend.daikon.properties.property.Property;

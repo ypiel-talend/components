@@ -1,15 +1,15 @@
-//  ============================================================================
+// ============================================================================
 //
-//  Copyright (C) 2006-2017 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2017 Talend Inc. - www.talend.com
 //
-//  This source code is available under agreement available at
-//  %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
+// This source code is available under agreement available at
+// %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
 //
-//  You should have received a copy of the agreement
-//  along with this program; if not, write to Talend SA
-//  9 rue Pages 92150 Suresnes, France
+// You should have received a copy of the agreement
+// along with this program; if not, write to Talend SA
+// 9 rue Pages 92150 Suresnes, France
 //
-//  ============================================================================
+// ============================================================================
 package org.talend.components.mongodb.wizard;
 
 import org.talend.components.api.properties.ComponentProperties;
@@ -21,12 +21,23 @@ public class MongoDBWizard extends ComponentWizard {
 
     MongoDBConnectionProperties cProps;
 
+    MongoDBCollectionListProperties mProps;
+
     MongoDBWizard(ComponentWizardDefinition def, String repositoryLocation) {
         super(def, repositoryLocation);
 
-        cProps = new MongoDBConnectionProperties("mongodb").setRepositoryLocation(getRepositoryLocation());
+        cProps = new MongoDBConnectionProperties("connection").setRepositoryLocation(getRepositoryLocation());
+        cProps.database.setRequired(false);
         cProps.init();
+
         addForm(cProps.getForm(MongoDBConnectionProperties.FORM_WIZARD));
+
+        mProps = new MongoDBCollectionListProperties("mProps").setConnection(cProps)
+                .setRepositoryLocation(getRepositoryLocation());
+        mProps.init();
+
+        addForm(mProps.getForm(MongoDBCollectionListProperties.FORM_DATABASE));
+        addForm(mProps.getForm(MongoDBCollectionListProperties.FORM_COLLECTION));
 
     }
 
@@ -36,6 +47,13 @@ public class MongoDBWizard extends ComponentWizard {
 
     public void setupProperties(MongoDBConnectionProperties cPropsOther) {
         cProps.copyValuesFrom(cPropsOther);
+        mProps.setConnection(cProps);
+        if(mProps.databaseNames!=null){
+            mProps.selectedDatabaseNames.setStoredValue(mProps.databaseNames);
+        }
+        if(mProps.collectionNames!=null){
+            mProps.selectedCollectionNames.setStoredValue(mProps.collectionNames);
+        }
     }
 
 }

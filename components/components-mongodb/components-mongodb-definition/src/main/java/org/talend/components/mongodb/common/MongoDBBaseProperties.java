@@ -20,7 +20,9 @@ import org.apache.avro.Schema;
 import org.talend.components.api.component.Connector;
 import org.talend.components.api.component.PropertyPathConnector;
 import org.talend.components.common.FixedConnectorsComponentProperties;
+import org.talend.components.mongodb.MongoDBCollectionProperties;
 import org.talend.components.mongodb.MongoDBConnectionProperties;
+import org.talend.components.mongodb.MongoDBProvideConnectionProperties;
 import org.talend.daikon.properties.presentation.Form;
 
 /**
