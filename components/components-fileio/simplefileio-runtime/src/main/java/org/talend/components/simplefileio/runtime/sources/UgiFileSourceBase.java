@@ -92,6 +92,7 @@ public abstract class UgiFileSourceBase<K, V, SourceT extends UgiFileSourceBase<
         public UgiFileReader(UgiFileSourceBase<K, V, ?> source) throws IOException {
             super(source, source.filepattern, source.formatClass, source.serializableSplit == null ? null
                     : source.serializableSplit.getSplit());
+            job.getConfiguration().set("fs.hdfs.impl.disable.cache", "true");
             this.source = source;
         }
 
