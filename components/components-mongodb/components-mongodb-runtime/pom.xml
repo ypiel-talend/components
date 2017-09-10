@@ -6,6 +6,7 @@
 		<groupId>org.talend.components</groupId>
 		<artifactId>components-parent</artifactId>
 		<version>0.20.0-SNAPSHOT</version>
+		<relativePath>../../../components-parent/pom.xml</relativePath>
 	</parent>
 
 	<groupId>org.talend.components</groupId>
@@ -40,6 +41,12 @@
 			<version>${project.parent.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongo-java-driver</artifactId>
+			<version>2.14.1</version>
+		</dependency>
+
 		<!-- Jar containing Test utils methods -->
 		<dependency>
 			<groupId>org.talend.components</groupId>
@@ -55,6 +62,10 @@
 			<version>${project.parent.version}</version>
 			<scope>test</scope>
 		</dependency>
-		
-	</dependencies>
+        <dependency>
+            <groupId>org.talend.daikon</groupId>
+            <artifactId>daikon</artifactId>
+        </dependency>
+
+    </dependencies>
 </project>

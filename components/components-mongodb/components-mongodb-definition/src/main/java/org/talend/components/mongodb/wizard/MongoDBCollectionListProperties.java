@@ -33,7 +33,6 @@ import org.talend.components.mongodb.MongoDBConnectionProperties;
 import org.talend.components.mongodb.MongoDBRuntimeSourceOrSink;
 import org.talend.daikon.NamedThing;
 import org.talend.daikon.SimpleNamedThing;
-import org.talend.daikon.avro.AvroUtils;
 import org.talend.daikon.i18n.GlobalI18N;
 import org.talend.daikon.i18n.I18nMessages;
 import org.talend.daikon.properties.Properties;
@@ -155,14 +154,12 @@ public class MongoDBCollectionListProperties extends ComponentPropertiesImpl {
             Set<String> dbNames = dbCollections.keySet();
             for (String dbName : dbNames) {
                 connection.database.setValue(dbName);
-                String dbRepLocation =repo.storeProperties(connection, dbName, connRepLocation, null);
+                String dbRepLocation = repo.storeProperties(connection, dbName, connRepLocation, null);
                 for (String collectionName : dbCollections.get(dbName)) {
                     MongoDBCollectionProperties modProps = new MongoDBCollectionProperties(collectionName);
                     modProps.connection = connection;
                     modProps.init();
-                    // Schema schema = ss.getEndpointSchema(null, collectionName);
-                    // FIXME
-                    Schema schema = AvroUtils.createEmptySchema();
+                    Schema schema = ss.getEndpointSchema(null, collectionName);
                     modProps.collectionName.setValue(collectionName);
                     modProps.main.schema.setValue(schema);
                     repo.storeProperties(modProps, collectionName, dbRepLocation, "main.schema");
