@@ -1,15 +1,15 @@
-//  ============================================================================
+// ============================================================================
 //
-//  Copyright (C) 2006-2017 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2017 Talend Inc. - www.talend.com
 //
-//  This source code is available under agreement available at
-//  %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
+// This source code is available under agreement available at
+// %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
 //
-//  You should have received a copy of the agreement
-//  along with this program; if not, write to Talend SA
-//  9 rue Pages 92150 Suresnes, France
+// You should have received a copy of the agreement
+// along with this program; if not, write to Talend SA
+// 9 rue Pages 92150 Suresnes, France
 //
-//  ============================================================================
+// ============================================================================
 
 package org.talend.components.mongodb;
 
@@ -86,10 +86,10 @@ public class MongoDBCollectionProperties extends ComponentPropertiesImpl {
 
     // consider beforeActivate and beforeRender (change after to afterActivate)
 
-    public ValidationResult beforeModuleName() throws Exception {
+    public ValidationResult beforeCollectionName() throws Exception {
         try (SandboxedInstance sandboxedInstance = getSandboxedInstance(SOURCE_OR_SINK_CLASS, USE_CURRENT_JVM_PROPS)) {
             MongoDBRuntimeSourceOrSink ss = (MongoDBRuntimeSourceOrSink) sandboxedInstance.getInstance();
-            // ss.initialize(null, connection);
+            ss.initialize(null, connection);
             ValidationResultMutable vr = new ValidationResultMutable();
             try {
                 List<NamedThing> collectionNames = ss.getSchemaNames(null);
@@ -102,11 +102,11 @@ public class MongoDBCollectionProperties extends ComponentPropertiesImpl {
         }
     }
 
-    public ValidationResult afterModuleName() {
+    public ValidationResult afterCollectionName() {
         try (SandboxedInstance sandboxedInstance = getSandboxedInstance(SOURCE_OR_SINK_CLASS, USE_CURRENT_JVM_PROPS)) {
 
             MongoDBRuntimeSourceOrSink ss = (MongoDBRuntimeSourceOrSink) sandboxedInstance.getInstance();
-            // ss.initialize(null, connection);
+            ss.initialize(null, connection);
             ValidationResultMutable vr = new ValidationResultMutable();
             try {
                 Schema schema = ss.getEndpointSchema(null, collectionName.getStringValue());
