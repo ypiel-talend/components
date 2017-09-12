@@ -52,7 +52,7 @@ public class MongoDBCollectionListProperties extends ComponentPropertiesImpl {
 
     public static final String FORM_COLLECTION = "Collection";
 
-    public MongoDBConnectionProperties connection = new MongoDBConnectionProperties("connection");
+    private MongoDBConnectionProperties connection = new MongoDBConnectionProperties("connection");
 
     private String repositoryLocation;
 
@@ -82,10 +82,6 @@ public class MongoDBCollectionListProperties extends ComponentPropertiesImpl {
     public MongoDBCollectionListProperties setRepositoryLocation(String location) {
         repositoryLocation = location;
         return this;
-    }
-
-    public String getRepositoryLocation() {
-        return repositoryLocation;
     }
 
     @Override
@@ -146,6 +142,9 @@ public class MongoDBCollectionListProperties extends ComponentPropertiesImpl {
             if (vr.getStatus() != ValidationResult.Result.OK) {
                 return vr;
             }
+
+            connection.databaseNames = selectedDatabaseNames.getValue();
+            connection.collectionNames = selectedCollectionNames.getValue();
 
             String connRepLocation = repo.storeProperties(connection, connection.name.getValue(), repositoryLocation, null);
 

@@ -47,13 +47,13 @@ public class MongoDBWizard extends ComponentWizard {
 
     public void setupProperties(MongoDBConnectionProperties cPropsOther) {
         cProps.copyValuesFrom(cPropsOther);
+        if (cPropsOther.databaseNames != null) {
+            mProps.selectedDatabaseNames.setValue(cPropsOther.databaseNames);
+        }
+        if (cPropsOther.collectionNames != null) {
+            mProps.selectedCollectionNames.setValue(cPropsOther.collectionNames);
+        }
         mProps.setConnection(cProps);
-        if(mProps.databaseNames!=null){
-            mProps.selectedDatabaseNames.setStoredValue(mProps.databaseNames);
-        }
-        if(mProps.collectionNames!=null){
-            mProps.selectedCollectionNames.setStoredValue(mProps.collectionNames);
-        }
     }
 
 }

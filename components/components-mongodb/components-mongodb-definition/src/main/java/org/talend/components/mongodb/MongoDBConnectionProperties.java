@@ -20,12 +20,15 @@ import static org.talend.daikon.properties.property.PropertyFactory.newBoolean;
 import static org.talend.daikon.properties.property.PropertyFactory.newEnum;
 import static org.talend.daikon.properties.property.PropertyFactory.newString;
 
+import java.util.List;
+
 import org.talend.components.api.properties.ComponentPropertiesImpl;
 import org.talend.components.api.properties.ComponentReferenceProperties;
 import org.talend.components.common.KerberosProperties;
 import org.talend.components.common.UserPasswordProperties;
 import org.talend.components.mongodb.common.ReplicaSetTable;
 import org.talend.components.mongodb.tmongodbconnection.TMongoDBConnectionDefinition;
+import org.talend.daikon.NamedThing;
 import org.talend.daikon.i18n.GlobalI18N;
 import org.talend.daikon.i18n.I18nMessages;
 import org.talend.daikon.properties.PresentationItem;
@@ -98,6 +101,8 @@ public class MongoDBConnectionProperties extends ComponentPropertiesImpl {
     public PresentationItem testConnection = new PresentationItem("testConnection");
 
     public static final String FORM_WIZARD = "Wizard";
+
+    public List<NamedThing> databaseNames = null, collectionNames = null;
 
     public MongoDBConnectionProperties(String name) {
         super(name);
