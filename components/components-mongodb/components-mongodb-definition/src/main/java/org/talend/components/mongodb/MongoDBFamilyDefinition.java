@@ -21,6 +21,7 @@ import org.talend.components.mongodb.tmongodbconnection.TMongoDBConnectionDefini
 import org.talend.components.mongodb.tmongodbinput.TMongoDBInputDefinition;
 import org.talend.components.mongodb.tmongodboutput.TMongoDBOutputDefinition;
 import org.talend.components.mongodb.tmongodbrow.TMongoDBRowDefinition;
+import org.talend.components.mongodb.wizard.MongoDBEditWizardDefinition;
 import org.talend.components.mongodb.wizard.MongoDBWizardDefinition;
 
 import com.google.auto.service.AutoService;
@@ -44,7 +45,9 @@ public class MongoDBFamilyDefinition extends AbstractComponentFamilyDefinition i
                 new TMongoDBRowDefinition(), //
                 new TMongoDBBulkLoadDefinition(), //
                 new TMongoDBCloseDefinition(), //
-                new MongoDBWizardDefinition());//
+
+                new MongoDBWizardDefinition(), //
+                new MongoDBEditWizardDefinition());//
 
     }
 
