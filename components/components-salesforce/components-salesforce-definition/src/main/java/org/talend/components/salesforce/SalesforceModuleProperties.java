@@ -86,7 +86,7 @@ public class SalesforceModuleProperties extends ComponentPropertiesImpl implemen
     public ValidationResult beforeModuleName() throws Exception {
         try (SandboxedInstance sandboxedInstance = getSandboxedInstance(SOURCE_OR_SINK_CLASS, USE_CURRENT_JVM_PROPS)) {
             SalesforceRuntimeSourceOrSink ss = (SalesforceRuntimeSourceOrSink) sandboxedInstance.getInstance();
-            ss.initialize(null, connection);
+            ss.initialize(null, getEffectiveConnection());
             ValidationResult vr = ss.validate(null);
             if (vr.getStatus() == ValidationResult.Result.OK) {
                 try {
@@ -98,20 +98,19 @@ public class SalesforceModuleProperties extends ComponentPropertiesImpl implemen
             } else {
                 return vr;
             }
-            
+
             return ValidationResult.OK;
         }
     }
 
     public ValidationResult afterModuleName() throws Exception {
         try (SandboxedInstance sandboxedInstance = getSandboxedInstance(SOURCE_OR_SINK_CLASS, USE_CURRENT_JVM_PROPS)) {
-
             SalesforceRuntimeSourceOrSink ss = (SalesforceRuntimeSourceOrSink) sandboxedInstance.getInstance();
-            ss.initialize(null, connection);
+            ss.initialize(null, getEffectiveConnection());
             ValidationResult vr = ss.validate(null);
             if (vr.getStatus() == ValidationResult.Result.OK) {
                 try {
-                    Schema schema = ss.getEndpointSchema(null,moduleName.getStringValue());
+                    Schema schema = ss.getEndpointSchema(null, moduleName.getStringValue());
                     main.schema.setValue(schema);
                 } catch (Exception ex) {
                     throw new ComponentException(ExceptionUtil.exceptionToValidationResult(ex));
@@ -119,9 +118,17 @@ public class SalesforceModuleProperties extends ComponentPropertiesImpl implemen
             } else {
                 throw new ComponentException(vr);
             }
-            
+
             return ValidationResult.OK;
         }
+    }
+
+    private SalesforceConnectionProperties getEffectiveConnection() {
+        if (getConnectionProperties().getReferencedConnectionProperties() != null) {
+            return getConnectionProperties().getReferencedConnectionProperties();
+        }
+
+        return getConnectionProperties();
     }
 
     @Override

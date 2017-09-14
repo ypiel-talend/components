@@ -19,6 +19,7 @@ import org.talend.components.snowflake.tsnowflakeclose.TSnowflakeCloseDefinition
 import org.talend.components.snowflake.tsnowflakeconnection.TSnowflakeConnectionDefinition;
 import org.talend.components.snowflake.tsnowflakeinput.TSnowflakeInputDefinition;
 import org.talend.components.snowflake.tsnowflakeoutput.TSnowflakeOutputDefinition;
+import org.talend.components.snowflake.tsnowflakerow.TSnowflakeRowDefinition;
 
 import com.google.auto.service.AutoService;
 
@@ -36,11 +37,15 @@ public class SnowflakeFamilyDefinition extends AbstractComponentFamilyDefinition
     public SnowflakeFamilyDefinition() {
         super(NAME,
                 // Components
-                new TSnowflakeConnectionDefinition(), new TSnowflakeInputDefinition(), new TSnowflakeOutputDefinition(),
-                new TSnowflakeCloseDefinition(),
+                new TSnowflakeConnectionDefinition(), new TSnowflakeRowDefinition(), new TSnowflakeInputDefinition(),
+                new TSnowflakeOutputDefinition(), new TSnowflakeCloseDefinition(),
                 // Component wizards
                 new SnowflakeConnectionWizardDefinition(),
-                new SnowflakeTableWizardDefinition());
+                // TODO remove the edit one
+                new SnowflakeConnectionEditWizardDefinition()
+        // TODO not sure it works, so comment it, keep like before
+        // new SnowflakeTableWizardDefinition()
+        );
     }
 
     @Override

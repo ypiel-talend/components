@@ -10,21 +10,20 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package org.talend.components.common.oauth;
+package org.talend.components.snowflake;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ErrorCollector;
-import org.talend.components.api.test.ComponentTestUtils;
+public class SnowflakeConnectionEditWizardDefinition extends SnowflakeConnectionWizardDefinition {
 
-public class AllPropertiesTest {
+    public static final String COMPONENT_WIZARD_NAME = "snowflake.edit"; //$NON-NLS-1$
 
-    @Rule
-    public ErrorCollector errorCollector = new ErrorCollector();
+    @Override
+    public String getName() {
+        return COMPONENT_WIZARD_NAME;
+    }
 
-    @Test
-    public void testAlli18n() {
-        ComponentTestUtils.checkAllI18N(new OauthProperties(null).init(), errorCollector);
+    @Override
+    public boolean isTopLevel() {
+        return false;
     }
 
 }

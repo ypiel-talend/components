@@ -49,7 +49,6 @@ import org.talend.components.api.wizard.ComponentWizardDefinition;
 import org.talend.components.api.wizard.WizardImageType;
 import org.talend.components.api.wizard.WizardNameComparator;
 import org.talend.components.common.CommonTestUtils;
-import org.talend.components.common.oauth.OauthProperties;
 import org.talend.components.salesforce.SalesforceConnectionProperties;
 import org.talend.components.salesforce.SalesforceConnectionProperties.LoginType;
 import org.talend.components.salesforce.SalesforceConnectionWizardDefinition;
@@ -108,7 +107,6 @@ public abstract class SalesforceComponentTestIT extends SalesforceTestBase {
         Form mainForm = props.getForm(Form.MAIN);
         assertEquals("Salesforce Connection Settings", mainForm.getTitle());
         assertFalse(mainForm.getWidget(SalesforceUserPasswordProperties.class).isHidden());
-        assertTrue(mainForm.getWidget(OauthProperties.class).isHidden());
 
         loginType.setValue(SalesforceConnectionProperties.LoginType.OAuth);
         props = checkAndAfter(mainForm, "loginType", props);
@@ -116,7 +114,6 @@ public abstract class SalesforceComponentTestIT extends SalesforceTestBase {
         assertTrue(mainForm.isRefreshUI());
 
         assertTrue(mainForm.getWidget(SalesforceUserPasswordProperties.class).isHidden());
-        assertFalse(mainForm.getWidget(OauthProperties.class).isHidden());
     }
 
     @Test
@@ -280,8 +277,8 @@ public abstract class SalesforceComponentTestIT extends SalesforceTestBase {
         }
         assertEquals(1, connectionWizardDefinitionNumber);
         assertEquals("Salesforce Connection", wizardDef.getMenuItemName());
-        ComponentWizard connectionWizard = getComponentService().getComponentWizard(SalesforceConnectionWizardDefinition.COMPONENT_WIZARD_NAME,
-                "nodeSalesforce");
+        ComponentWizard connectionWizard = getComponentService()
+                .getComponentWizard(SalesforceConnectionWizardDefinition.COMPONENT_WIZARD_NAME, "nodeSalesforce");
         assertNotNull(connectionWizard);
         assertEquals("nodeSalesforce", connectionWizard.getRepositoryLocation());
         List<Form> forms = connectionWizard.getForms();
@@ -299,7 +296,8 @@ public abstract class SalesforceComponentTestIT extends SalesforceTestBase {
 
         Form advancedForm = connProps.getForm(Form.ADVANCED);
         assertTrue(
-                ((PresentationItem) connFormWizard.getWidget("advanced").getContent()).getFormtoShow() + " should be == to " + advancedForm,
+                ((PresentationItem) connFormWizard.getWidget("advanced").getContent()).getFormtoShow() + " should be == to "
+                        + advancedForm,
                 ((PresentationItem) connFormWizard.getWidget("advanced").getContent()).getFormtoShow() == advancedForm);
 
         Object image = getComponentService().getWizardPngImage(SalesforceConnectionWizardDefinition.COMPONENT_WIZARD_NAME,
@@ -379,14 +377,18 @@ public abstract class SalesforceComponentTestIT extends SalesforceTestBase {
         SalesforceConnectionProperties connProps = (SalesforceConnectionProperties) connectionWizardForm.getProperties();
 
         ComponentWizard[] subWizards = getComponentService().getComponentWizardsForProperties(connProps, "location")
-                .toArray(new ComponentWizard[2]);
+                .toArray(new ComponentWizard[3]);
         Arrays.sort(subWizards, new WizardNameComparator());
-        assertEquals(2, subWizards.length);
+        assertEquals(3, subWizards.length);
 
         assertTrue(subWizards[0].getDefinition().isTopLevel());
         assertEquals("Salesforce Connection", subWizards[0].getDefinition().getMenuItemName());
+        
         assertFalse(subWizards[1].getDefinition().isTopLevel());
-        assertEquals("Salesforce Modules", subWizards[1].getDefinition().getMenuItemName());
+        assertEquals("Edit Salesforce", subWizards[1].getDefinition().getMenuItemName());
+        
+        assertFalse(subWizards[2].getDefinition().isTopLevel());
+        assertEquals("Salesforce Modules", subWizards[2].getDefinition().getMenuItemName());
     }
 
     @Test
