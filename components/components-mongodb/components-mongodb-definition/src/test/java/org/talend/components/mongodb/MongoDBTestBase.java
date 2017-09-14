@@ -14,7 +14,6 @@ package org.talend.components.mongodb;
 
 import javax.inject.Inject;
 
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
