@@ -25,9 +25,9 @@ import org.talend.components.api.component.PropertyPathConnector;
 import org.talend.components.common.FixedConnectorsComponentProperties;
 import org.talend.components.common.SchemaProperties;
 import org.talend.components.mongodb.MongoDBConnectionProperties;
+import org.talend.components.mongodb.MongoDBProvideConnectionProperties;
 import org.talend.components.mongodb.common.FunctionParametersTable;
 import org.talend.components.mongodb.common.KeyValueTable;
-import org.talend.components.mongodb.MongoDBProvideConnectionProperties;
 import org.talend.daikon.properties.presentation.Form;
 import org.talend.daikon.properties.presentation.Widget;
 import org.talend.daikon.properties.property.Property;
@@ -124,11 +124,6 @@ public class TMongoDBRowProperties extends FixedConnectorsComponentProperties im
 
     public void afterExecuteJSONCommand() {
         refreshLayout(getForm(Form.MAIN));
-    }
-
-    public void afterQueryType() {
-        refreshLayout(getForm(Form.MAIN));
-        refreshLayout(getForm(Form.ADVANCED));
     }
 
     @Override

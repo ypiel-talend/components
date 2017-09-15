@@ -145,7 +145,6 @@ public class MongoDBConnectionProperties extends ComponentPropertiesImpl {
         wizardForm.addRow(host);
         wizardForm.addColumn(port);
         wizardForm.addRow(database);
-        wizardForm.addRow(requiredAuthentication);
 
         wizardForm.addRow(requiredAuthentication);
         wizardForm.addRow(widget(authenticationMechanism).setWidgetType(Widget.ENUMERATION_WIDGET_TYPE));
@@ -182,13 +181,18 @@ public class MongoDBConnectionProperties extends ComponentPropertiesImpl {
 
                 DBVersion version = dbVersion.getValue();
                 if (DBVersion.MONGODB_2_5_X.equals(version)) {
-                    authenticationMechanism.setPossibleValues(AuthenticationMechanism.KERBEROS_MEC,
+                    authenticationMechanism.setPossibleValues(AuthenticationMechanism.NEGOTIATE_MEC,
                             AuthenticationMechanism.KERBEROS_MEC);
+
                 } else if (DBVersion.MONGODB_2_6_X.equals(version)) {
-                    authenticationMechanism.setPossibleValues(AuthenticationMechanism.KERBEROS_MEC,
+                    authenticationMechanism.setPossibleValues(AuthenticationMechanism.NEGOTIATE_MEC,
                             AuthenticationMechanism.KERBEROS_MEC, AuthenticationMechanism.PLAIN_MEC);
                 } else {
                     authenticationMechanism.setPossibleValues(AuthenticationMechanism.values());
+                }
+                // If the value didn't contained in the possible value, need to set default value
+                if (!authenticationMechanism.getPossibleValues().contains(authenticationMechanism.getValue())) {
+                    authenticationMechanism.setValue(AuthenticationMechanism.NEGOTIATE_MEC);
                 }
 
                 form.getWidget(replicaSetTable).setVisible(useReplicaSet.getValue());

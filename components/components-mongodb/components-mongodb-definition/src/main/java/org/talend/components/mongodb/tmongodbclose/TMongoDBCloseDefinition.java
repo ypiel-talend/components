@@ -33,6 +33,7 @@ public class TMongoDBCloseDefinition extends MongoDBDefinition {
     public RuntimeInfo getRuntimeInfo(ExecutionEngine engine, ComponentProperties properties,
             ConnectorTopology connectorTopology) {
         assertEngineCompatibility(engine);
+        assertConnectorTopologyCompatibility(connectorTopology);
         return getCommonRuntimeInfo(SOURCE_OR_SINK_CLASS);
     }
 

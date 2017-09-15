@@ -38,7 +38,7 @@ public abstract class MongoDBDefinition extends AbstractComponentDefinition {
 
     public static final String SOURCE_OR_SINK_CLASS = "org.talend.components.mongodb.runtime.MongoDBSourceOrSink";
 
-    public static final String SOURCE_CLASS = "org.talend.components.mongodb.runtime.MongoDBSourceOrSink";
+    public static final String SOURCE_CLASS = "org.talend.components.mongodb.runtime.MongoDBSource";
 
     public static final String SINK_CLASS = "org.talend.components.mongodb.runtime.MongoDBSink";
 

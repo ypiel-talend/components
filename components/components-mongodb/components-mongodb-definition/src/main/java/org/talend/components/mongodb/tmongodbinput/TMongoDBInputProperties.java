@@ -18,12 +18,9 @@ import static org.talend.daikon.properties.property.PropertyFactory.newBoolean;
 import static org.talend.daikon.properties.property.PropertyFactory.newEnum;
 import static org.talend.daikon.properties.property.PropertyFactory.newProperty;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
-import org.apache.avro.Schema;
 import org.talend.components.api.component.ISchemaListener;
 import org.talend.components.api.component.PropertyPathConnector;
 import org.talend.components.mongodb.MongoDBConnectionProperties;
@@ -77,6 +74,7 @@ public class TMongoDBInputProperties extends MongoDBBaseProperties {
         super.setupProperties();
         readPreference.setValue(ReadPreference.PRIMARY);
         query.setValue("{}");
+        queryType.setValue(QueryType.FIND_QUERY);
         collection.setSchemaListener(new ISchemaListener() {
 
             @Override
@@ -112,12 +110,17 @@ public class TMongoDBInputProperties extends MongoDBBaseProperties {
         super.refreshLayout(form);
         boolean findQuery = QueryType.FIND_QUERY.equals(queryType.getValue());
         if (form.getName().equals(Form.MAIN)) {
+            form.getWidget(readPreference).setVisible(setReadPreference.getValue());
             form.getWidget(query).setVisible(findQuery);
             form.getWidget(aggStages).setHidden(findQuery);
             form.getWidget(sort).setVisible(findQuery);
             form.getWidget(limit).setVisible(findQuery);
             if (MongoDBConnectionProperties.DBVersion.MONGODB_2_5_X.equals(connection.dbVersion.getValue())) {
                 queryType.setPossibleValues(QueryType.FIND_QUERY);
+                if (QueryType.AGGREGATION_QUERY.equals(queryType.getValue())) {
+                    queryType.setValue(QueryType.FIND_QUERY);
+                    afterQueryType();
+                }
             } else {
                 queryType.setPossibleValues(QueryType.values());
             }
@@ -140,6 +143,11 @@ public class TMongoDBInputProperties extends MongoDBBaseProperties {
     }
 
     public void afterQueryType() {
+        refreshLayout(getForm(Form.MAIN));
+        refreshLayout(getForm(Form.ADVANCED));
+    }
+
+    public void beforeQueryType() {
         refreshLayout(getForm(Form.MAIN));
         refreshLayout(getForm(Form.ADVANCED));
     }

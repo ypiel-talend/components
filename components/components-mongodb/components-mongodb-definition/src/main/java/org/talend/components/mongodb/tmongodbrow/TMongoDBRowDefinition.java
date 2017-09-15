@@ -35,6 +35,11 @@ public class TMongoDBRowDefinition extends MongoDBDefinition {
     }
 
     @Override
+    public String getPartitioning() {
+        return NONE;
+    }
+
+    @Override
     public boolean isSchemaAutoPropagate() {
         return true;
     }
@@ -48,6 +53,7 @@ public class TMongoDBRowDefinition extends MongoDBDefinition {
     public RuntimeInfo getRuntimeInfo(ExecutionEngine engine, ComponentProperties properties,
             ConnectorTopology connectorTopology) {
         assertEngineCompatibility(engine);
+        assertConnectorTopologyCompatibility(connectorTopology);
         // TODO recheck when work on runtime part
         if (connectorTopology == ConnectorTopology.INCOMING || connectorTopology == ConnectorTopology.NONE) {
             return getCommonRuntimeInfo(SINK_CLASS);

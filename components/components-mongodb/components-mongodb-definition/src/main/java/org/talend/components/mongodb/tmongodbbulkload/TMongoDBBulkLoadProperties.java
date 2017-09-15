@@ -20,11 +20,11 @@ import static org.talend.daikon.properties.property.PropertyFactory.newString;
 
 import org.talend.components.api.component.ISchemaListener;
 import org.talend.components.api.properties.ComponentPropertiesImpl;
+import org.talend.components.mongodb.MongoDBCollectionProperties;
 import org.talend.components.mongodb.MongoDBConnectionProperties;
+import org.talend.components.mongodb.MongoDBProvideConnectionProperties;
 import org.talend.components.mongodb.common.AdditionalArgsTable;
 import org.talend.components.mongodb.common.MongoDBBaseProperties;
-import org.talend.components.mongodb.MongoDBCollectionProperties;
-import org.talend.components.mongodb.MongoDBProvideConnectionProperties;
 import org.talend.components.mongodb.common.UpsertFieldTable;
 import org.talend.daikon.properties.presentation.Form;
 import org.talend.daikon.properties.presentation.Widget;
@@ -87,6 +87,8 @@ public class TMongoDBBulkLoadProperties extends ComponentPropertiesImpl implemen
     public void setupProperties() {
         super.setupProperties();
         connection.dbVersion.setValue(MongoDBConnectionProperties.DBVersion.MONGODB_3_2_X);
+        dataAction.setValue(DataAction.INSERT);
+        fileType.setValue(FileType.csv);
         collection.setSchemaListener(new ISchemaListener() {
 
             @Override

@@ -35,6 +35,11 @@ public class TMongoDBBulkLoadDefinition extends MongoDBDefinition {
     }
 
     @Override
+    public String getPartitioning() {
+        return NONE;
+    }
+
+    @Override
     public Class<? extends ComponentProperties> getPropertyClass() {
         return TMongoDBBulkLoadProperties.class;
     }
@@ -43,6 +48,7 @@ public class TMongoDBBulkLoadDefinition extends MongoDBDefinition {
     public RuntimeInfo getRuntimeInfo(ExecutionEngine engine, ComponentProperties properties,
             ConnectorTopology connectorTopology) {
         assertEngineCompatibility(engine);
+        assertConnectorTopologyCompatibility(connectorTopology);
         return getCommonRuntimeInfo(SOURCE_OR_SINK_CLASS);
     }
 

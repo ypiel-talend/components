@@ -14,26 +14,27 @@ package org.talend.components.mongodb;
 
 import javax.inject.Inject;
 
+import org.apache.avro.Schema;
+import org.apache.avro.SchemaBuilder;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.rules.ErrorCollector;
-import org.talend.components.api.component.ComponentDefinition;
+import org.talend.components.api.service.ComponentService;
+import org.talend.components.api.service.common.ComponentServiceImpl;
 import org.talend.components.api.service.common.DefinitionRegistry;
 import org.talend.components.api.test.AbstractComponentTest2;
-import org.talend.components.mongodb.tmongodbconnection.TMongoDBConnectionDefinition;
-import org.talend.daikon.definition.Definition;
-import org.talend.daikon.definition.service.DefinitionRegistryService;
 
 public class MongoDBTestBase extends AbstractComponentTest2 {
+
+    private ComponentServiceImpl componentService;
 
     @Rule
     public ErrorCollector errorCollector = new ErrorCollector();
 
     @Inject
-    private DefinitionRegistry definitionRegistry;
+    DefinitionRegistry definitionRegistry;
 
     @Override
-    public DefinitionRegistryService getDefinitionRegistry() {
+    public DefinitionRegistry getDefinitionRegistry() {
         if (definitionRegistry == null) {
             definitionRegistry = new DefinitionRegistry();
             definitionRegistry.registerComponentFamilyDefinition(new MongoDBFamilyDefinition());
@@ -41,9 +42,11 @@ public class MongoDBTestBase extends AbstractComponentTest2 {
         return definitionRegistry;
     }
 
-    @Test
-    public void testComponentHasBeenRegistered() {
-        assertComponentIsRegistered(ComponentDefinition.class, "tMongoDBConnection", TMongoDBConnectionDefinition.class);
-        assertComponentIsRegistered(Definition.class, "tMongoDBConnection", TMongoDBConnectionDefinition.class);
+    public ComponentService getComponentService() {
+        if (componentService == null) {
+            componentService = new ComponentServiceImpl(getDefinitionRegistry());
+        }
+        return componentService;
     }
+
 }

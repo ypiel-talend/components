@@ -120,7 +120,7 @@ public class TMongoDBOutputProperties extends MongoDBBaseProperties {
         super.refreshLayout(form);
         if (form.getName().equals(Form.MAIN)) {
             form.getWidget(writeConcern).setVisible(setWriteConcern.getValue());
-            boolean setBulkWriteVisible = MongoDBConnectionProperties.DBVersion.MONGODB_2_5_X
+            boolean setBulkWriteVisible = !MongoDBConnectionProperties.DBVersion.MONGODB_2_5_X
                     .equals(connection.dbVersion.getValue());
             form.getWidget(setBulkWrite).setVisible(setBulkWriteVisible);
             form.getWidget(bulkWriteType).setVisible(setBulkWriteVisible && setBulkWrite.getValue());
@@ -142,11 +142,6 @@ public class TMongoDBOutputProperties extends MongoDBBaseProperties {
 
     public void afterSetBulkWrite() {
         refreshLayout(getForm(Form.MAIN));
-    }
-
-    public void afterQueryType() {
-        refreshLayout(getForm(Form.MAIN));
-        refreshLayout(getForm(Form.ADVANCED));
     }
 
 }
