@@ -50,7 +50,7 @@ Run:
 mvn archetype:generate \
 -DarchetypeGroupId=org.talend.components \
 -DarchetypeArtifactId=tcomp-bd-archetype-processing \
--DarchetypeVersion=0.20.0-SNAPSHOT \
+-DarchetypeVersion=0.20.0 \
 -DarchetypeCatalog=local \
 -DgroupId=org.talend.components \
 -DartifactId=Generic \
