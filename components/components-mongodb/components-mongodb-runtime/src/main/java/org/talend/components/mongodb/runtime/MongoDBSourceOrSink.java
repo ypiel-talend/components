@@ -43,9 +43,9 @@ public class MongoDBSourceOrSink implements MongoDBRuntimeSourceOrSink {
     // The max number of retrieved records which used to guess schema of the collection
     public static final int COUNT_ROWS = 50;
 
-    private static final String KEY_MONGO = "mongo";
+    public static final String KEY_MONGO = "mongo";
 
-    private static final String KEY_DB = "db";
+    public static final String KEY_DB = "db";
 
     private static final String DB_COLLECTION_MARK = "$";
 
@@ -74,7 +74,7 @@ public class MongoDBSourceOrSink implements MongoDBRuntimeSourceOrSink {
         }
 
         MongoClientOptions clientOptions = new MongoClientOptions.Builder().build();
-        List<com.mongodb.MongoCredential> mongoCredentialList = new ArrayList<MongoCredential>();
+        List<MongoCredential> mongoCredentialList = getCredential(properties);
 
         ServerAddress serverAddress = new ServerAddress(properties.host.getValue(), properties.port.getValue());
         mongo = new MongoClient(serverAddress, mongoCredentialList, clientOptions);
@@ -82,7 +82,7 @@ public class MongoDBSourceOrSink implements MongoDBRuntimeSourceOrSink {
 
         if (container != null) {
             container.setComponentData(container.getCurrentComponentId(), KEY_MONGO, mongo);
-            if (StringUtils.isEmpty(properties.database.getValue())) {
+            if (!StringUtils.isEmpty(properties.database.getValue())) {
                 DB db = mongo.getDB(properties.database.getValue());
                 container.setComponentData(container.getCurrentComponentId(), KEY_DB, db);
             }
@@ -229,6 +229,52 @@ public class MongoDBSourceOrSink implements MongoDBRuntimeSourceOrSink {
 
     private String getCollectionNameWithDB(String dbName, String collectionName) {
         return dbName + DB_COLLECTION_MARK + collectionName;
+    }
+
+    private List<MongoCredential> getCredential(MongoDBConnectionProperties properties) {
+        List<MongoCredential> mongoCredentialList = new ArrayList<MongoCredential>();
+        if (properties.requiredAuthentication.getValue()) {
+            MongoCredential mongoCredential = null;
+            if ((MongoDBConnectionProperties.AuthenticationMechanism.NEGOTIATE_MEC
+                    .equals(properties.authenticationMechanism.getValue()))
+                    || (MongoDBConnectionProperties.AuthenticationMechanism.PLAIN_MEC
+                            .equals(properties.authenticationMechanism.getValue()))
+                    || (MongoDBConnectionProperties.AuthenticationMechanism.SCRAMSHA1_MEC
+                            .equals(properties.authenticationMechanism.getValue()))) {
+                String userId = properties.userPassword.userId.getName();
+                String password = properties.userPassword.password.getName();
+                if (userId == null || password == null) {
+                    throw new IllegalArgumentException("Please check user password!");
+                }
+                if ((MongoDBConnectionProperties.AuthenticationMechanism.NEGOTIATE_MEC
+                        .equals(properties.authenticationMechanism.getValue()))) {
+                    if (MongoDBConnectionProperties.DBVersion.MONGODB_3_0_X.equals(properties.dbVersion.getValue())
+                            || MongoDBConnectionProperties.DBVersion.MONGODB_3_2_X.equals(properties.dbVersion.getValue())) {
+                        mongoCredential = com.mongodb.MongoCredential.createCredential(userId,
+                                properties.authenticationDatabase.getValue(), password.toCharArray());
+                    } else {
+                        mongoCredential = com.mongodb.MongoCredential.createMongoCRCredential(userId,
+                                properties.authenticationDatabase.getValue(), password.toCharArray());
+                    }
+                } else if (MongoDBConnectionProperties.AuthenticationMechanism.PLAIN_MEC
+                        .equals(properties.authenticationMechanism.getValue())) {
+                    mongoCredential = com.mongodb.MongoCredential.createPlainCredential(userId, "$external",
+                            password.toCharArray());
+                } else if (MongoDBConnectionProperties.AuthenticationMechanism.SCRAMSHA1_MEC
+                        .equals(properties.authenticationMechanism.getValue())) {
+                    mongoCredential = com.mongodb.MongoCredential.createScramSha1Credential(userId,
+                            properties.authenticationDatabase.getValue(), password.toCharArray());
+                }
+            } else {
+                System.setProperty("java.security.krb5.realm", properties.kerberos.realm.getValue());
+                System.setProperty("java.security.krb5.kdc", properties.kerberos.kdcServer.getValue());
+                System.setProperty("javax.security.auth.useSubjectCredsOnly", "false");
+                mongoCredential = com.mongodb.MongoCredential
+                        .createGSSAPICredential(properties.kerberos.userPrincipal.getValue());
+            }
+            mongoCredentialList.add(mongoCredential);
+        }
+        return mongoCredentialList;
     }
 
 }

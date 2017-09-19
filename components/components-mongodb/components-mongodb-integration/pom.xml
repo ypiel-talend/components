@@ -1,0 +1,119 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.talend.components</groupId>
+        <artifactId>components-parent</artifactId>
+        <version>0.20.0-SNAPSHOT</version>
+        <relativePath>../../../components-parent/pom.xml</relativePath>
+    </parent>
+
+    <artifactId>component-mongodb-integration</artifactId>
+
+    <name>Components - MongoDB Integration Tests</name>
+    <packaging>jar</packaging>
+
+    <properties>
+        <!-- skip the deployment for integration tests, not necessary -->
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <coverage.sonar.reportRoot>${project.basedir}/..</coverage.sonar.reportRoot>
+        <talend_docker_registry>registry.datapwn.com</talend_docker_registry>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.talend.components</groupId>
+            <artifactId>components-mongodb-definition</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.talend.components</groupId>
+            <artifactId>components-mongodb-runtime</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.talend.components</groupId>
+            <artifactId>components-common</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Tests -->
+        <dependency>
+            <groupId>org.ops4j.pax.url</groupId>
+            <artifactId>pax-url-aether</artifactId>
+            <version>2.4.7</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.talend.components</groupId>
+            <artifactId>components-mongodb-definition</artifactId>
+            <version>0.20.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+    <!--
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <mongodb.port>${mongodb.port}</mongodb.port>
+                        <mongodb.username>${MONGO_INITDB_ROOT_USERNAME}</mongodb.username>
+                        <mongodb.password>${MONGO_INITDB_ROOT_PASSWORD}</mongodb.password>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>0.21.0</version>
+                <configuration>
+                    <showLogs>true</showLogs>
+                    <registry>${talend_docker_registry}</registry>
+                    <images>
+                        <image>
+                            <name>mongo:3.5.13</name>
+                            <alias>mongo</alias>
+                            <run>
+                                <ports>
+                                    <port>mongodb.port:27017</port>
+                                </ports>
+                                <env>
+                                    <MONGO_INITDB_ROOT_USERNAME>talend</MONGO_INITDB_ROOT_USERNAME>
+                                    <MONGO_INITDB_ROOT_PASSWORD>talend</MONGO_INITDB_ROOT_PASSWORD>
+                                </env>
+                                <wait>
+                                    <log>waiting for connections on port</log>
+                                    <time>6000000</time>
+                                </wait>
+                            </run>
+                        </image>
+                    </images>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>start</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>start</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>stop</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>stop</goal>
+                        </goals>
+                    </execution>
+                </executions>
+
+            </plugin>
+        </plugins>
+    </build>
+-->
+</project>
