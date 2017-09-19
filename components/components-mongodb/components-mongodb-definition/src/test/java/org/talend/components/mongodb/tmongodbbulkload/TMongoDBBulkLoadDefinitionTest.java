@@ -22,7 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.talend.components.api.component.AbstractComponentDefinition.NONE;
 import static org.talend.components.api.component.ComponentDefinition.RETURN_ERROR_MESSAGE_PROP;
-import static org.talend.components.mongodb.common.MongoDBDefinition.SOURCE_OR_SINK_CLASS;
+import static org.talend.components.mongodb.common.MongoDBDefinition.BULK_LOAD_RUNTIME_CLASS;
 
 import java.util.Arrays;
 import java.util.List;
@@ -83,7 +83,7 @@ public class TMongoDBBulkLoadDefinitionTest extends MongoDBDefinitionTestBasic {
         TMongoDBBulkLoadDefinition definition = new TMongoDBBulkLoadDefinition();
         RuntimeInfo runtimeInfo = definition.getRuntimeInfo(ExecutionEngine.DI, null, ConnectorTopology.NONE);
         String runtimeClassName = runtimeInfo.getRuntimeClassName();
-        assertThat(runtimeClassName, equalTo(SOURCE_OR_SINK_CLASS));
+        assertThat(runtimeClassName, equalTo(BULK_LOAD_RUNTIME_CLASS));
     }
 
     @Test
