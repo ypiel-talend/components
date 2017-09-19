@@ -16,7 +16,8 @@ package org.talend.components.filesystem;
 import org.talend.components.api.AbstractComponentFamilyDefinition;
 import org.talend.components.api.ComponentInstaller;
 import org.talend.components.api.Constants;
-import org.talend.daikon.definition.Definition;
+import org.talend.components.filesystem.input.FilesystemInputDefinition;
+import org.talend.components.filesystem.output.FilesystemOutputDefinition;
 
 import com.google.auto.service.AutoService;
 
@@ -38,9 +39,9 @@ public class FilesystemComponentFamilyDefinition extends AbstractComponentFamily
 
     public static final String MAVEN_DEFAULT_RUNTIME_URI = "mvn:" + MAVEN_GROUP_ID + "/" + MAVEN_DEFAULT_RUNTIME_ARTIFACT_ID;
 
-    //TODO registry definitions
-    public FilesystemComponentFamilyDefinition(Definition<?>[] definitions) {
-        super(NAME, definitions);
+    public FilesystemComponentFamilyDefinition() {
+        super(NAME, new FilesystemDatastoreDefinition(), new FilesystemDatasetDefinition(), new FilesystemInputDefinition(),
+                new FilesystemOutputDefinition());
     }
 
     @Override

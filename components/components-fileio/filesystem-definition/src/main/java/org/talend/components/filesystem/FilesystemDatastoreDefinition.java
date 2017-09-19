@@ -13,44 +13,61 @@
 
 package org.talend.components.filesystem;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import org.talend.components.api.component.runtime.DependenciesReader;
+import org.talend.components.api.component.runtime.JarRuntimeInfo;
+import org.talend.components.api.exception.ComponentException;
 import org.talend.components.common.dataset.DatasetProperties;
 import org.talend.components.common.datastore.DatastoreDefinition;
-import org.talend.components.common.datastore.DatastoreProperties;
+import org.talend.components.filesystem.input.FilesystemInputDefinition;
+import org.talend.components.filesystem.output.FilesystemOutputDefinition;
 import org.talend.daikon.definition.DefinitionImageType;
 import org.talend.daikon.definition.I18nDefinition;
 import org.talend.daikon.runtime.RuntimeInfo;
 
-public class FilesystemDatastoreDefinition extends I18nDefinition implements DatastoreDefinition{
+public class FilesystemDatastoreDefinition extends I18nDefinition implements DatastoreDefinition<FilesystemDatastoreProperties> {
 
     public static final String RUNTIME = "org.talend.components.filesystem.runtime.FilesystemDatastoreRuntime";
 
     public static final String NAME = FilesystemComponentFamilyDefinition.NAME + "Datastore";
 
-//    /** TODO: See {@link org.talend.components.simplefileio.SimpleFileIODatasetDefinition}. */
-//    public static final boolean IS_CLASSLOADER_REUSABLE = SimpleFileIODatasetDefinition.IS_CLASSLOADER_REUSABLE;
+    /** TODO: See {@link org.talend.components.filesystem.FilesystemDatasetDefinition}. */
+    public static final boolean IS_CLASSLOADER_REUSABLE = FilesystemDatasetDefinition.IS_CLASSLOADER_REUSABLE;
 
     public FilesystemDatastoreDefinition() {
         super(NAME);
     }
 
     @Override
-    public DatasetProperties createDatasetProperties(DatastoreProperties storeProp) {
-        return null;
+    public DatasetProperties createDatasetProperties(FilesystemDatastoreProperties storeProp) {
+        FilesystemDatasetProperties dataset = new FilesystemDatasetProperties("dataset");
+        dataset.init();
+        dataset.setDatastoreProperties(storeProp);
+        return dataset;
     }
 
     @Override
     public String getInputCompDefinitionName() {
-        return null;
+        return FilesystemInputDefinition.NAME;
     }
 
     @Override
     public String getOutputCompDefinitionName() {
-        return null;
+        return FilesystemOutputDefinition.NAME;
     }
 
     @Override
-    public RuntimeInfo getRuntimeInfo(DatastoreProperties properties) {
-        return null;
+    public RuntimeInfo getRuntimeInfo(FilesystemDatastoreProperties properties) {
+        try {
+            return new JarRuntimeInfo(new URL(FilesystemComponentFamilyDefinition.MAVEN_DEFAULT_RUNTIME_URI),
+                    DependenciesReader.computeDependenciesFilePath(FilesystemComponentFamilyDefinition.MAVEN_GROUP_ID,
+                            FilesystemComponentFamilyDefinition.MAVEN_DEFAULT_RUNTIME_ARTIFACT_ID),
+                    RUNTIME, IS_CLASSLOADER_REUSABLE);
+        } catch (MalformedURLException e) {
+            throw new ComponentException(e);
+        }
     }
 
     @Override

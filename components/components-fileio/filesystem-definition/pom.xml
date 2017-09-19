@@ -25,6 +25,12 @@
             <artifactId>components-common</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.talend.components</groupId>
+            <artifactId>simplefileio-definition</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <!-- Annotation processing -->
         <dependency>
             <groupId>biz.aQute.bnd</groupId>

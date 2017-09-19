@@ -29,6 +29,7 @@
              but must be run after they are installed. -->
         <module>fileio-integration</module>
         <module>filesystem-definition</module>
+        <module>filesystem-runtime</module>
     </modules>
 
     <build>
