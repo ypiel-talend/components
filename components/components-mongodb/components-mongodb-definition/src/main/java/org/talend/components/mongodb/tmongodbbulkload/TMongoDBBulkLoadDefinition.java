@@ -43,7 +43,7 @@ public class TMongoDBBulkLoadDefinition extends MongoDBDefinition {
     public RuntimeInfo getRuntimeInfo(ExecutionEngine engine, ComponentProperties properties,
             ConnectorTopology connectorTopology) {
         assertEngineCompatibility(engine);
-        return getCommonRuntimeInfo(SOURCE_OR_SINK_CLASS);
+        return getCommonRuntimeInfo(BULK_LOAD_RUNTIME_CLASS);
     }
 
     @Override

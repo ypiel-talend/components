@@ -38,5 +38,9 @@ public class MongoDBRuntimeHelper {
         }
         return columnName;
     }
+    
+    public static boolean isVacant(String content){
+        return content == null || content.length() == 0 || "\"\"".equals(content);
+    }
 
 }
