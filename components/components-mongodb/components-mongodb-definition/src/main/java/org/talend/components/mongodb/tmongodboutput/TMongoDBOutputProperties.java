@@ -67,6 +67,8 @@ public class TMongoDBOutputProperties extends MongoDBBaseProperties {
 
     public Property<DataAction> dataAction = newEnum("dataAction", DataAction.class);
 
+    public Property<Boolean> updateAll = newBoolean("updateAll");
+
     public NodePathMappingTable mapping = new NodePathMappingTable("mapping", true);
 
     public Property<Boolean> dieOnError = newBoolean("dieOnError");
@@ -108,6 +110,7 @@ public class TMongoDBOutputProperties extends MongoDBBaseProperties {
         mainForm.addRow(widget(bulkWriteType).setWidgetType(Widget.ENUMERATION_WIDGET_TYPE));
         mainForm.addRow(bulkWriteSize);
         mainForm.addRow(widget(dataAction).setWidgetType(Widget.ENUMERATION_WIDGET_TYPE));
+        mainForm.addColumn(updateAll);
         mainForm.addRow(widget(mapping).setWidgetType(Widget.TABLE_WIDGET_TYPE));
         mainForm.addRow(dieOnError);
 
@@ -125,6 +128,8 @@ public class TMongoDBOutputProperties extends MongoDBBaseProperties {
             form.getWidget(setBulkWrite).setVisible(setBulkWriteVisible);
             form.getWidget(bulkWriteType).setVisible(setBulkWriteVisible && setBulkWrite.getValue());
             form.getWidget(bulkWriteSize).setVisible(setBulkWriteVisible && setBulkWrite.getValue());
+            form.getWidget(updateAll).setVisible(
+                    DataAction.SET.equals(dataAction.getValue()) || DataAction.UPSERT_WITH_SET.equals(dataAction.getValue()));
 
         } else if (form.getName().equals(Form.ADVANCED)) {
             // TODO
@@ -144,4 +149,7 @@ public class TMongoDBOutputProperties extends MongoDBBaseProperties {
         refreshLayout(getForm(Form.MAIN));
     }
 
+    public void afterDataAction() {
+        refreshLayout(getForm(Form.MAIN));
+    }
 }

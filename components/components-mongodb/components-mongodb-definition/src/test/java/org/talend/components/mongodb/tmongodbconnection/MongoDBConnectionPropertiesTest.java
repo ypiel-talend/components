@@ -21,6 +21,7 @@ import static org.junit.Assert.assertTrue;
 import static org.talend.components.mongodb.MongoDBConnectionProperties.FORM_WIZARD;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -50,7 +51,14 @@ public class MongoDBConnectionPropertiesTest extends MongoDBTestBase {
         // Main form default show status
         Form mainForm = properties.getForm(Form.MAIN);
         checkBasicSetting(mainForm, properties);
+        assertTrue(mainForm.getWidget(properties.dbVersion).isVisible());
+        assertTrue(mainForm.getWidget(properties.useReplicaSet).isVisible());
+        assertTrue(mainForm.getWidget(properties.replicaSetTable).isHidden());
+        assertTrue(mainForm.getWidget(properties.host).isVisible());
+        assertTrue(mainForm.getWidget(properties.port).isVisible());
+        assertTrue(mainForm.getWidget(properties.database).isVisible());
         assertTrue(mainForm.getWidget(properties.useSSL).isVisible());
+
         // Advanced form default show status
         Form advanceForm = properties.getForm(Form.ADVANCED);
         assertTrue(advanceForm.getWidget(properties.queryOptionNoTimeout).isVisible());
@@ -71,8 +79,12 @@ public class MongoDBConnectionPropertiesTest extends MongoDBTestBase {
         assertNull(properties.database.getValue());
         assertFalse(properties.useSSL.getValue());
         assertFalse(properties.requiredAuthentication.getValue());
-        assertTrue(properties.authenticationMechanism.getPossibleValues()
-                .containsAll(Arrays.asList(MongoDBConnectionProperties.AuthenticationMechanism.values())));
+        List<MongoDBConnectionProperties.AuthenticationMechanism> allAuthTypes = Arrays.asList( //
+                MongoDBConnectionProperties.AuthenticationMechanism.NEGOTIATE_MEC, //
+                MongoDBConnectionProperties.AuthenticationMechanism.PLAIN_MEC, //
+                MongoDBConnectionProperties.AuthenticationMechanism.SCRAMSHA1_MEC, //
+                MongoDBConnectionProperties.AuthenticationMechanism.KERBEROS_MEC);
+        assertTrue(properties.authenticationMechanism.getPossibleValues().containsAll(allAuthTypes));
         assertEquals(MongoDBConnectionProperties.AuthenticationMechanism.NEGOTIATE_MEC,
                 properties.authenticationMechanism.getValue());
         assertFalse(properties.setAuthenticationDatabase.getValue());
@@ -147,6 +159,37 @@ public class MongoDBConnectionPropertiesTest extends MongoDBTestBase {
         assertEquals(4, properties.authenticationMechanism.getPossibleValues().size());
         assertEquals(MongoDBConnectionProperties.AuthenticationMechanism.NEGOTIATE_MEC,
                 properties.authenticationMechanism.getValue());
+
+        // UseReplicaSet
+        properties.useReplicaSet.setValue(true);
+        componentService.afterProperty(properties.useReplicaSet.getName(), properties);
+        assertTrue(mainForm.getWidget(properties.replicaSetTable).isVisible());
+        assertTrue(mainForm.getWidget(properties.host).isHidden());
+        assertTrue(mainForm.getWidget(properties.port).isHidden());
+
+    }
+
+    @Test
+    public void testI18nForEnumProperty() {
+        MongoDBConnectionProperties properties = new MongoDBConnectionProperties("root");
+        properties.init();
+        assertEquals("MongoDB 2.5.X (Deprecated)",
+                properties.dbVersion.getPossibleValuesDisplayName(MongoDBConnectionProperties.DBVersion.MONGODB_2_5_X));
+        assertEquals("MongoDB 2.6.X",
+                properties.dbVersion.getPossibleValuesDisplayName(MongoDBConnectionProperties.DBVersion.MONGODB_2_6_X));
+        assertEquals("MongoDB 3.0.X",
+                properties.dbVersion.getPossibleValuesDisplayName(MongoDBConnectionProperties.DBVersion.MONGODB_3_0_X));
+        assertEquals("MongoDB 3.2.X",
+                properties.dbVersion.getPossibleValuesDisplayName(MongoDBConnectionProperties.DBVersion.MONGODB_3_2_X));
+
+        assertEquals("NEGOTIATE (Recommended for non Kerberized environments)", properties.authenticationMechanism
+                .getPossibleValuesDisplayName(MongoDBConnectionProperties.AuthenticationMechanism.NEGOTIATE_MEC));
+        assertEquals("PLAIN SASL", properties.authenticationMechanism
+                .getPossibleValuesDisplayName(MongoDBConnectionProperties.AuthenticationMechanism.PLAIN_MEC));
+        assertEquals("SCRAM-SHA-1 SASL", properties.authenticationMechanism
+                .getPossibleValuesDisplayName(MongoDBConnectionProperties.AuthenticationMechanism.SCRAMSHA1_MEC));
+        assertEquals("GSSAPI SASL (KERBEROS)", properties.authenticationMechanism
+                .getPossibleValuesDisplayName(MongoDBConnectionProperties.AuthenticationMechanism.KERBEROS_MEC));
 
     }
 

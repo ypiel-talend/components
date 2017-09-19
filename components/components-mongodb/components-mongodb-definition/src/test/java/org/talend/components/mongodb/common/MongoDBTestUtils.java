@@ -22,4 +22,11 @@ public class MongoDBTestUtils {
             .name("Id").type().stringType().noDefault() //
             .name("Name").type().stringType().noDefault() //
             .name("Age").type().intType().noDefault().endRecord();
+
+    public static Schema BASIC_SCHEMA_01 = SchemaBuilder.builder().record("Schema").fields() //
+            .name("Id").type().stringType().noDefault() //
+            .name("Name").type().stringType().noDefault() //
+            .name("Age").type().intType().noDefault()//
+            .name("Note").type().stringType().noDefault() //
+            .endRecord();
 }

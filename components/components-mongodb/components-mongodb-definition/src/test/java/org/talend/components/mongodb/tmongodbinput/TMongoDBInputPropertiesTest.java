@@ -51,6 +51,14 @@ public class TMongoDBInputPropertiesTest extends MongoDBTestBase {
         assertEquals(3, properties.mapping.nodePath.getValue().size());
         assertTrue(properties.mapping.nodePath.getValue().containsAll(Arrays.asList(null, null, null)));
 
+        // Change schema to add new column
+        properties.collection.main.schema.setValue(MongoDBTestUtils.BASIC_SCHEMA_01);
+        componentService.afterProperty(properties.collection.main.schema.getName(), properties.collection.main);
+        assertNotNull(properties.mapping.nodePath.getValue());
+        assertEquals(4, properties.mapping.columnName.getValue().size());
+        assertTrue(properties.mapping.columnName.getValue().containsAll(Arrays.asList("Id", "Name", "Age")));
+        assertEquals(4, properties.mapping.nodePath.getValue().size());
+        assertTrue(properties.mapping.nodePath.getValue().containsAll(Arrays.asList(null, null, null)));
     }
 
     @Test
@@ -133,6 +141,30 @@ public class TMongoDBInputPropertiesTest extends MongoDBTestBase {
         assertEquals(Connector.MAIN_NAME, mainConnector.getName());
         assertEquals("collection.main", mainConnector.getPropertyPath());
         assertEquals(0, properties.getAllSchemaPropertiesConnectors(false).size());
+    }
+
+    @Test
+    public void testI18nForEnumProperty() {
+        TMongoDBInputProperties properties = new TMongoDBInputProperties("root");
+        properties.init();
+        properties.setupProperties();
+
+        assertEquals("Primary",
+                properties.readPreference.getPossibleValuesDisplayName(TMongoDBInputProperties.ReadPreference.PRIMARY));
+        assertEquals("Primary preferred",
+                properties.readPreference.getPossibleValuesDisplayName(TMongoDBInputProperties.ReadPreference.PRIMARY_PREFERRED));
+        assertEquals("Secondary",
+                properties.readPreference.getPossibleValuesDisplayName(TMongoDBInputProperties.ReadPreference.SECONDARY));
+        assertEquals("Secondary preferred", properties.readPreference
+                .getPossibleValuesDisplayName(TMongoDBInputProperties.ReadPreference.SECONDARY_PREFERRED));
+        assertEquals("Nearest",
+                properties.readPreference.getPossibleValuesDisplayName(TMongoDBInputProperties.ReadPreference.NEAREST));
+
+        assertEquals("Find Query",
+                properties.queryType.getPossibleValuesDisplayName(TMongoDBInputProperties.QueryType.FIND_QUERY));
+        assertEquals("Aggregation Pipeline Query",
+                properties.queryType.getPossibleValuesDisplayName(TMongoDBInputProperties.QueryType.AGGREGATION_QUERY));
+
     }
 
     @Ignore("Not implement")

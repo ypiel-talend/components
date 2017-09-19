@@ -20,6 +20,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Test;
 import org.talend.components.api.service.ComponentService;
@@ -34,6 +35,7 @@ public class TMongoDBBulkLoadPropertiesTest extends MongoDBTestBase {
     public void testSetupLayout() throws Exception {
         TMongoDBBulkLoadProperties properties = new TMongoDBBulkLoadProperties("properties");
         properties.init();
+        properties.setupProperties();
 
         ComponentTestUtils.checkSerialize(properties, errorCollector);
         Form mainForm = properties.getForm(Form.MAIN);
@@ -42,6 +44,7 @@ public class TMongoDBBulkLoadPropertiesTest extends MongoDBTestBase {
         assertTrue(mainForm.getWidget(properties.localDBPath).isHidden());
         assertTrue(mainForm.getWidget(properties.specifyReplicateSet).isHidden());
         assertTrue(mainForm.getWidget(properties.replicateName).isHidden());
+        assertTrue(mainForm.getWidget(properties.krbAuthDatabase).isHidden());
         assertTrue(mainForm.getWidget(properties.collection).isVisible());
         assertTrue(mainForm.getWidget(properties.dropExistCollection).isVisible());
         assertTrue(mainForm.getWidget(properties.dataAction).isVisible());
@@ -62,6 +65,7 @@ public class TMongoDBBulkLoadPropertiesTest extends MongoDBTestBase {
         assertFalse(properties.specifyReplicateSet.getValue());
         assertNull(properties.replicateName.getValue());
         assertNull(properties.collection.collectionName.getValue());
+        assertEquals("$external", properties.krbAuthDatabase.getValue());
         assertFalse(properties.dropExistCollection.getValue());
         assertEquals(TMongoDBBulkLoadProperties.DataAction.INSERT, properties.dataAction.getValue());
         assertTrue(properties.dataAction.getPossibleValues()
@@ -75,6 +79,13 @@ public class TMongoDBBulkLoadPropertiesTest extends MongoDBTestBase {
         assertFalse(properties.ignoreBlanks.getValue());
         assertFalse(properties.jsonArray.getValue());
         assertFalse(properties.printLog.getValue());
+
+        List<MongoDBConnectionProperties.AuthenticationMechanism> allAuthTypes = Arrays.asList( //
+                MongoDBConnectionProperties.AuthenticationMechanism.MONGODBCR_MEC, //
+                MongoDBConnectionProperties.AuthenticationMechanism.PLAIN_MEC, //
+                MongoDBConnectionProperties.AuthenticationMechanism.SCRAMSHA1_MEC, //
+                MongoDBConnectionProperties.AuthenticationMechanism.KERBEROS_MEC);
+        assertTrue(properties.connection.authenticationMechanism.getPossibleValues().containsAll(allAuthTypes));
 
     }
 
@@ -136,6 +147,38 @@ public class TMongoDBBulkLoadPropertiesTest extends MongoDBTestBase {
         assertTrue(mainForm.getWidget(properties.headerLine).isVisible());
         assertTrue(mainForm.getWidget(properties.ignoreBlanks).isVisible());
         assertTrue(mainForm.getWidget(properties.jsonArray).isHidden());
+
+        properties.connection.requiredAuthentication.setValue(true);
+        componentService.afterProperty(properties.connection.requiredAuthentication.getName(), properties.connection);
+        properties.refreshLayout(mainForm);
+        properties.connection.authenticationMechanism.setValue(MongoDBConnectionProperties.AuthenticationMechanism.KERBEROS_MEC);
+        componentService.afterProperty(properties.connection.authenticationMechanism.getName(), properties.connection);
+        properties.refreshLayout(mainForm);
+        assertTrue(mainForm.getWidget(properties.krbAuthDatabase).isVisible());
+
+    }
+
+    @Test
+    public void testI18nForEnumProperty() {
+        TMongoDBBulkLoadProperties properties = new TMongoDBBulkLoadProperties("root");
+        properties.init();
+        properties.setupProperties();
+
+        assertEquals("MONGODB-CR (MongoDB TLS/SSL)", properties.connection.authenticationMechanism
+                .getPossibleValuesDisplayName(MongoDBConnectionProperties.AuthenticationMechanism.MONGODBCR_MEC));
+        assertEquals("PLAIN SASL", properties.connection.authenticationMechanism
+                .getPossibleValuesDisplayName(MongoDBConnectionProperties.AuthenticationMechanism.PLAIN_MEC));
+        assertEquals("SCRAM-SHA-1 SASL", properties.connection.authenticationMechanism
+                .getPossibleValuesDisplayName(MongoDBConnectionProperties.AuthenticationMechanism.SCRAMSHA1_MEC));
+        assertEquals("GSSAPI SASL (KERBEROS)", properties.connection.authenticationMechanism
+                .getPossibleValuesDisplayName(MongoDBConnectionProperties.AuthenticationMechanism.KERBEROS_MEC));
+
+        assertEquals("Insert", properties.dataAction.getPossibleValuesDisplayName(TMongoDBBulkLoadProperties.DataAction.INSERT));
+        assertEquals("Upsert", properties.dataAction.getPossibleValuesDisplayName(TMongoDBBulkLoadProperties.DataAction.UPSERT));
+
+        assertEquals("CSV", properties.fileType.getPossibleValuesDisplayName(TMongoDBBulkLoadProperties.FileType.csv));
+        assertEquals("JSON", properties.fileType.getPossibleValuesDisplayName(TMongoDBBulkLoadProperties.FileType.json));
+        assertEquals("TSV", properties.fileType.getPossibleValuesDisplayName(TMongoDBBulkLoadProperties.FileType.tsv));
 
     }
 

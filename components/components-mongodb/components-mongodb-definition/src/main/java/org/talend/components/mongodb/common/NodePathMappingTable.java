@@ -91,6 +91,8 @@ public class NodePathMappingTable extends BasedOnSchemaTable {
                                 newRemoveNullFields.add(((List<Boolean>) oldRemoveNullField).get(index));
                             }
                         }
+                    }else{
+                        newNodePaths.add(null);
                     }
                 } else {
                     newNodePaths.add(null);

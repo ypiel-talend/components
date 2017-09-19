@@ -46,6 +46,8 @@ public class TMongoDBBulkLoadProperties extends ComponentPropertiesImpl implemen
 
     public Property<String> replicateName = newProperty("replicateName");
 
+    public Property<String> krbAuthDatabase = newProperty("krbAuthDatabase");
+
     public Property<Boolean> dropExistCollection = newBoolean("dropExistCollection");
 
     public Property<String> dataFile = newString("dataFile");
@@ -87,6 +89,15 @@ public class TMongoDBBulkLoadProperties extends ComponentPropertiesImpl implemen
     public void setupProperties() {
         super.setupProperties();
         connection.dbVersion.setValue(MongoDBConnectionProperties.DBVersion.MONGODB_3_2_X);
+        connection.authenticationMechanism.setPossibleValues( //
+                MongoDBConnectionProperties.AuthenticationMechanism.MONGODBCR_MEC, //
+                MongoDBConnectionProperties.AuthenticationMechanism.PLAIN_MEC, //
+                MongoDBConnectionProperties.AuthenticationMechanism.SCRAMSHA1_MEC, //
+                MongoDBConnectionProperties.AuthenticationMechanism.KERBEROS_MEC);
+        connection.kerberos.userPrincipal.setValue("mongouser@EXAMPLE.COM");
+        connection.kerberos.realm.setValue("mongodb");
+        connection.kerberos.kdcServer.setValue("talend-mongo");
+        krbAuthDatabase.setValue("$external");
         dataAction.setValue(DataAction.INSERT);
         fileType.setValue(FileType.csv);
         collection.setSchemaListener(new ISchemaListener() {
@@ -106,6 +117,7 @@ public class TMongoDBBulkLoadProperties extends ComponentPropertiesImpl implemen
         mainForm.addRow(useLocalDBPath);
         mainForm.addRow(widget(localDBPath).setWidgetType(Widget.DIRECTORY_WIDGET_TYPE));
         mainForm.addRow(connection.getForm(Form.MAIN));
+        mainForm.addRow(krbAuthDatabase);
         mainForm.addRow(specifyReplicateSet);
         mainForm.addRow(replicateName);
         mainForm.addRow(collection.getForm(Form.REFERENCE));
@@ -147,6 +159,12 @@ public class TMongoDBBulkLoadProperties extends ComponentPropertiesImpl implemen
 
             form.getWidget(specifyReplicateSet).setVisible(!useLocalDB && useReplica);
             form.getWidget(replicateName).setVisible(!useLocalDB && useReplica && specifyReplicateSet.getValue());
+
+            boolean needKerbosAuth = connection.requiredAuthentication.getValue()
+                    && MongoDBConnectionProperties.AuthenticationMechanism.KERBEROS_MEC
+                            .equals(connection.authenticationMechanism.getValue());
+
+            form.getWidget(krbAuthDatabase).setVisible(needKerbosAuth);
 
             form.getWidget(upsertField).setVisible(DataAction.UPSERT.equals(dataAction.getValue()));
             boolean isCsvOrTsv = FileType.csv.equals(fileType.getValue()) || FileType.tsv.equals(fileType.getValue());

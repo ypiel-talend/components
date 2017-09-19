@@ -57,6 +57,7 @@ public class MongoDBConnectionProperties extends ComponentPropertiesImpl {
     }
 
     public enum AuthenticationMechanism {
+        MONGODBCR_MEC, // for bulkload
         NEGOTIATE_MEC,
         PLAIN_MEC,
         SCRAMSHA1_MEC,
@@ -181,14 +182,21 @@ public class MongoDBConnectionProperties extends ComponentPropertiesImpl {
 
                 DBVersion version = dbVersion.getValue();
                 if (DBVersion.MONGODB_2_5_X.equals(version)) {
-                    authenticationMechanism.setPossibleValues(AuthenticationMechanism.NEGOTIATE_MEC,
+                    authenticationMechanism.setPossibleValues( //
+                            AuthenticationMechanism.NEGOTIATE_MEC, //
                             AuthenticationMechanism.KERBEROS_MEC);
 
                 } else if (DBVersion.MONGODB_2_6_X.equals(version)) {
-                    authenticationMechanism.setPossibleValues(AuthenticationMechanism.NEGOTIATE_MEC,
-                            AuthenticationMechanism.KERBEROS_MEC, AuthenticationMechanism.PLAIN_MEC);
+                    authenticationMechanism.setPossibleValues( //
+                            AuthenticationMechanism.NEGOTIATE_MEC, //
+                            AuthenticationMechanism.PLAIN_MEC, //
+                            AuthenticationMechanism.KERBEROS_MEC);
                 } else {
-                    authenticationMechanism.setPossibleValues(AuthenticationMechanism.values());
+                    authenticationMechanism.setPossibleValues( //
+                            AuthenticationMechanism.NEGOTIATE_MEC, //
+                            AuthenticationMechanism.PLAIN_MEC, //
+                            AuthenticationMechanism.SCRAMSHA1_MEC, //
+                            AuthenticationMechanism.KERBEROS_MEC);
                 }
                 // If the value didn't contained in the possible value, need to set default value
                 if (!authenticationMechanism.getPossibleValues().contains(authenticationMechanism.getValue())) {
@@ -196,6 +204,8 @@ public class MongoDBConnectionProperties extends ComponentPropertiesImpl {
                 }
 
                 form.getWidget(replicaSetTable).setVisible(useReplicaSet.getValue());
+                form.getWidget(host).setHidden(useReplicaSet.getValue());
+                form.getWidget(port).setHidden(useReplicaSet.getValue());
                 boolean useAuthentication = requiredAuthentication.getValue();
                 boolean useAuthenticationDatabase = setAuthenticationDatabase.getValue();
                 form.getWidget(authenticationMechanism).setVisible(useAuthentication);

@@ -66,6 +66,7 @@ public class TMongoDBOutputPropertiesTest extends MongoDBTestBase {
         assertTrue(mainForm.getWidget(properties.bulkWriteType).isHidden());
         assertTrue(mainForm.getWidget(properties.bulkWriteSize).isHidden());
         assertTrue(mainForm.getWidget(properties.dataAction).isVisible());
+        assertTrue(mainForm.getWidget(properties.updateAll).isHidden());
         assertTrue(mainForm.getWidget(properties.mapping).isVisible());
         assertTrue(mainForm.getWidget(properties.dieOnError).isVisible());
 
@@ -114,6 +115,38 @@ public class TMongoDBOutputPropertiesTest extends MongoDBTestBase {
         assertTrue(mainForm.getWidget(properties.setBulkWrite).isHidden());
         assertTrue(mainForm.getWidget(properties.bulkWriteType).isHidden());
         assertTrue(mainForm.getWidget(properties.bulkWriteSize).isHidden());
+
+        // DataAction changed
+        properties.dataAction.setValue(TMongoDBOutputProperties.DataAction.SET);
+        componentService.afterProperty(properties.dataAction.getName(), properties);
+        assertTrue(mainForm.getWidget(properties.updateAll).isVisible());
+
+    }
+
+    @Test
+    public void testI18nForEnumProperty() {
+        TMongoDBOutputProperties properties = new TMongoDBOutputProperties("root");
+        properties.init();
+        properties.setupProperties();
+
+        assertEquals("ACKNOWLEDGED",
+                properties.writeConcern.getPossibleValuesDisplayName(TMongoDBOutputProperties.WriteConcern.ACKNOWLEDGED));
+        assertEquals("UNACKNOWLEDGED",
+                properties.writeConcern.getPossibleValuesDisplayName(TMongoDBOutputProperties.WriteConcern.UNACKNOWLEDGED));
+
+        assertEquals("JOURNALED",
+                properties.writeConcern.getPossibleValuesDisplayName(TMongoDBOutputProperties.WriteConcern.JOURNALED));
+
+        assertEquals("REPLICA_ACKNOWLEDGED",
+                properties.writeConcern.getPossibleValuesDisplayName(TMongoDBOutputProperties.WriteConcern.REPLICA_ACKNOWLEDGED));
+
+        assertEquals("Insert", properties.dataAction.getPossibleValuesDisplayName(TMongoDBOutputProperties.DataAction.INSERT));
+        assertEquals("Update", properties.dataAction.getPossibleValuesDisplayName(TMongoDBOutputProperties.DataAction.UPDATE));
+        assertEquals("Set", properties.dataAction.getPossibleValuesDisplayName(TMongoDBOutputProperties.DataAction.SET));
+        assertEquals("Upsert", properties.dataAction.getPossibleValuesDisplayName(TMongoDBOutputProperties.DataAction.UPSERT));
+        assertEquals("Upsert with set",
+                properties.dataAction.getPossibleValuesDisplayName(TMongoDBOutputProperties.DataAction.UPSERT_WITH_SET));
+        assertEquals("Delete", properties.dataAction.getPossibleValuesDisplayName(TMongoDBOutputProperties.DataAction.DELETE));
 
     }
 
