@@ -45,6 +45,7 @@ public class TMongoDBInputDefinition extends MongoDBDefinition {
     public RuntimeInfo getRuntimeInfo(ExecutionEngine engine, ComponentProperties properties,
             ConnectorTopology connectorTopology) {
         assertEngineCompatibility(engine);
+        assertConnectorTopologyCompatibility(connectorTopology);
         return getCommonRuntimeInfo(SOURCE_CLASS);
     }
 

@@ -33,6 +33,9 @@ public class KerberosProperties extends PropertiesImpl {
     @Override
     public void setupProperties() {
         super.setupProperties();
+        userPrincipal.setValue("user@EXAMPLE.COM");
+        realm.setValue("EXAMPLE.COM");
+        kdcServer.setValue("kdc.example.com");
     }
 
     @Override

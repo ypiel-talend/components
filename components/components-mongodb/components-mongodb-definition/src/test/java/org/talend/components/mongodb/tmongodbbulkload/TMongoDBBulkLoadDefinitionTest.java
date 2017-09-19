@@ -10,7 +10,8 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package org.talend.components.mongodb.tmongodbconnection;
+
+package org.talend.components.mongodb.tmongodbbulkload;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -19,7 +20,9 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.talend.components.api.component.AbstractComponentDefinition.NONE;
 import static org.talend.components.api.component.ComponentDefinition.RETURN_ERROR_MESSAGE_PROP;
+import static org.talend.components.mongodb.common.MongoDBDefinition.SOURCE_OR_SINK_CLASS;
 
 import java.util.Arrays;
 import java.util.List;
@@ -37,37 +40,37 @@ import org.talend.daikon.exception.TalendRuntimeException;
 import org.talend.daikon.properties.property.Property;
 import org.talend.daikon.runtime.RuntimeInfo;
 
-public class TMongoDBConnectionDefinitionTest extends MongoDBDefinitionTestBasic {
+public class TMongoDBBulkLoadDefinitionTest extends MongoDBDefinitionTestBasic {
 
     @Rule
     public final ExpectedException thrown = ExpectedException.none();
 
     @Test
-    public void testTMongoDBConnectionDefinition() throws Exception {
-        TMongoDBConnectionDefinition definition = new TMongoDBConnectionDefinition();
+    public void testTMongoDBBulkLoadDefinition() throws Exception {
+        TMongoDBBulkLoadDefinition definition = new TMongoDBBulkLoadDefinition();
         testDefinition(definition);
         assertEquals(true, definition.isStartable());
-        assertEquals(null, definition.getPartitioning());
+        assertEquals(NONE, definition.getPartitioning());
         assertEquals(false, definition.isSchemaAutoPropagate());
     }
 
     @Test
     public void testGetFamilies() {
-        testGetFamilies(new TMongoDBConnectionDefinition());
+        testGetFamilies(new TMongoDBBulkLoadDefinition());
     }
 
     @Test
     public void testGetPropertyClass() {
-        TMongoDBConnectionDefinition definition = new TMongoDBConnectionDefinition();
+        TMongoDBBulkLoadDefinition definition = new TMongoDBBulkLoadDefinition();
         Class<?> propertyClass = definition.getPropertyClass();
         String canonicalName = propertyClass.getCanonicalName();
 
-        assertThat(canonicalName, equalTo("org.talend.components.mongodb.MongoDBConnectionProperties"));
+        assertThat(canonicalName, equalTo("org.talend.components.mongodb.tmongodbbulkload.TMongoDBBulkLoadProperties"));
     }
 
     @Test
     public void testGetReturnProperties() {
-        TMongoDBConnectionDefinition definition = new TMongoDBConnectionDefinition();
+        TMongoDBBulkLoadDefinition definition = new TMongoDBBulkLoadDefinition();
         Property[] returnProperties = definition.getReturnProperties();
         List<Property> propertyList = Arrays.asList(returnProperties);
 
@@ -77,32 +80,31 @@ public class TMongoDBConnectionDefinitionTest extends MongoDBDefinitionTestBasic
 
     @Test
     public void testGetRuntimeInfo() {
-        TMongoDBConnectionDefinition definition = new TMongoDBConnectionDefinition();
+        TMongoDBBulkLoadDefinition definition = new TMongoDBBulkLoadDefinition();
         RuntimeInfo runtimeInfo = definition.getRuntimeInfo(ExecutionEngine.DI, null, ConnectorTopology.NONE);
         String runtimeClassName = runtimeInfo.getRuntimeClassName();
-        assertThat(runtimeClassName, equalTo("org.talend.components.mongodb.runtime.MongoDBSourceOrSink"));
+        assertThat(runtimeClassName, equalTo(SOURCE_OR_SINK_CLASS));
     }
 
     @Test
     public void testGetRuntimeInfoWrongEngine() {
-        TMongoDBConnectionDefinition definition = new TMongoDBConnectionDefinition();
+        TMongoDBBulkLoadDefinition definition = new TMongoDBBulkLoadDefinition();
         thrown.expect(TalendRuntimeException.class);
-        thrown.expectMessage(
-                "WRONG_EXECUTION_ENGINE:{component=tMongoDBConnection, requested=DI_SPARK_STREAMING, available=[DI]}");
+        thrown.expectMessage("WRONG_EXECUTION_ENGINE:{component=tMongoDBBulkLoad, requested=DI_SPARK_STREAMING, available=[DI]}");
         definition.getRuntimeInfo(ExecutionEngine.DI_SPARK_STREAMING, null, ConnectorTopology.NONE);
     }
 
     @Test
     public void testGetRuntimeInfoWrongTopology() {
-        TMongoDBConnectionDefinition definition = new TMongoDBConnectionDefinition();
+        TMongoDBBulkLoadDefinition definition = new TMongoDBBulkLoadDefinition();
         thrown.expect(TalendRuntimeException.class);
-        thrown.expectMessage("WRONG_CONNECTOR:{component=tMongoDBConnection}");
+        thrown.expectMessage("WRONG_CONNECTOR:{component=tMongoDBBulkLoad}");
         definition.getRuntimeInfo(ExecutionEngine.DI, null, ConnectorTopology.INCOMING);
     }
 
     @Test
     public void testGetSupportedConnectorTopologies() {
-        TMongoDBConnectionDefinition definition = new TMongoDBConnectionDefinition();
+        TMongoDBBulkLoadDefinition definition = new TMongoDBBulkLoadDefinition();
         Set<ConnectorTopology> connectorTopologies = definition.getSupportedConnectorTopologies();
 
         assertThat(connectorTopologies, contains(ConnectorTopology.NONE));
@@ -112,10 +114,9 @@ public class TMongoDBConnectionDefinitionTest extends MongoDBDefinitionTestBasic
 
     @Test
     public void testGetNestedCompatibleComponentPropertiesClass() {
-        TMongoDBConnectionDefinition definition = new TMongoDBConnectionDefinition();
+        TMongoDBBulkLoadDefinition definition = new TMongoDBBulkLoadDefinition();
         Class<? extends ComponentProperties>[] propertiesClass = definition.getNestedCompatibleComponentPropertiesClass();
         assertEquals(1, propertiesClass.length);
         assertTrue(propertiesClass[0].equals(MongoDBConnectionProperties.class));
     }
-
 }

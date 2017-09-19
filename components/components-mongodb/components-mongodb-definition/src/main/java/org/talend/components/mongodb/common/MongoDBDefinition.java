@@ -40,7 +40,7 @@ public abstract class MongoDBDefinition extends AbstractComponentDefinition {
     
     public static final String BULK_LOAD_RUNTIME_CLASS = "org.talend.components.mongodb.runtime.MongoDBBulkLoadRuntime";
 
-    public static final String SOURCE_CLASS = "org.talend.components.mongodb.runtime.MongoDBSourceOrSink";
+    public static final String SOURCE_CLASS = "org.talend.components.mongodb.runtime.MongoDBSource";
 
     public static final String SINK_CLASS = "org.talend.components.mongodb.runtime.MongoDBSink";
 

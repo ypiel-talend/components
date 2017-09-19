@@ -10,16 +10,20 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package org.talend.components.mongodb.tmongodbconnection;
+
+package org.talend.components.mongodb.tmongodbrow;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.not;
+import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.talend.components.api.component.AbstractComponentDefinition.NONE;
 import static org.talend.components.api.component.ComponentDefinition.RETURN_ERROR_MESSAGE_PROP;
+import static org.talend.components.mongodb.common.MongoDBDefinition.SINK_CLASS;
 
 import java.util.Arrays;
 import java.util.List;
@@ -37,37 +41,37 @@ import org.talend.daikon.exception.TalendRuntimeException;
 import org.talend.daikon.properties.property.Property;
 import org.talend.daikon.runtime.RuntimeInfo;
 
-public class TMongoDBConnectionDefinitionTest extends MongoDBDefinitionTestBasic {
+public class TMongoDBRowDefinitionTest extends MongoDBDefinitionTestBasic {
 
     @Rule
     public final ExpectedException thrown = ExpectedException.none();
 
     @Test
-    public void testTMongoDBConnectionDefinition() throws Exception {
-        TMongoDBConnectionDefinition definition = new TMongoDBConnectionDefinition();
+    public void testTMongoDBRowDefinition() throws Exception {
+        TMongoDBRowDefinition definition = new TMongoDBRowDefinition();
         testDefinition(definition);
         assertEquals(true, definition.isStartable());
-        assertEquals(null, definition.getPartitioning());
-        assertEquals(false, definition.isSchemaAutoPropagate());
+        assertEquals(NONE, definition.getPartitioning());
+        assertEquals(true, definition.isSchemaAutoPropagate());
     }
 
     @Test
     public void testGetFamilies() {
-        testGetFamilies(new TMongoDBConnectionDefinition());
+        testGetFamilies(new TMongoDBRowDefinition());
     }
 
     @Test
     public void testGetPropertyClass() {
-        TMongoDBConnectionDefinition definition = new TMongoDBConnectionDefinition();
+        TMongoDBRowDefinition definition = new TMongoDBRowDefinition();
         Class<?> propertyClass = definition.getPropertyClass();
         String canonicalName = propertyClass.getCanonicalName();
 
-        assertThat(canonicalName, equalTo("org.talend.components.mongodb.MongoDBConnectionProperties"));
+        assertThat(canonicalName, equalTo("org.talend.components.mongodb.tmongodbrow.TMongoDBRowProperties"));
     }
 
     @Test
     public void testGetReturnProperties() {
-        TMongoDBConnectionDefinition definition = new TMongoDBConnectionDefinition();
+        TMongoDBRowDefinition definition = new TMongoDBRowDefinition();
         Property[] returnProperties = definition.getReturnProperties();
         List<Property> propertyList = Arrays.asList(returnProperties);
 
@@ -77,45 +81,44 @@ public class TMongoDBConnectionDefinitionTest extends MongoDBDefinitionTestBasic
 
     @Test
     public void testGetRuntimeInfo() {
-        TMongoDBConnectionDefinition definition = new TMongoDBConnectionDefinition();
-        RuntimeInfo runtimeInfo = definition.getRuntimeInfo(ExecutionEngine.DI, null, ConnectorTopology.NONE);
-        String runtimeClassName = runtimeInfo.getRuntimeClassName();
-        assertThat(runtimeClassName, equalTo("org.talend.components.mongodb.runtime.MongoDBSourceOrSink"));
+        TMongoDBRowDefinition definition = new TMongoDBRowDefinition();
+        RuntimeInfo runtimeIn = definition.getRuntimeInfo(ExecutionEngine.DI, null, ConnectorTopology.INCOMING);
+
+        RuntimeInfo runtimeNone = definition.getRuntimeInfo(ExecutionEngine.DI, null, ConnectorTopology.INCOMING);
+        assertThat(runtimeIn.getRuntimeClassName(), equalTo(SINK_CLASS));
+        assertThat(runtimeNone.getRuntimeClassName(), equalTo(SINK_CLASS));
     }
 
     @Test
     public void testGetRuntimeInfoWrongEngine() {
-        TMongoDBConnectionDefinition definition = new TMongoDBConnectionDefinition();
+        TMongoDBRowDefinition definition = new TMongoDBRowDefinition();
         thrown.expect(TalendRuntimeException.class);
-        thrown.expectMessage(
-                "WRONG_EXECUTION_ENGINE:{component=tMongoDBConnection, requested=DI_SPARK_STREAMING, available=[DI]}");
+        thrown.expectMessage("WRONG_EXECUTION_ENGINE:{component=tMongoDBRow, requested=DI_SPARK_STREAMING, available=[DI]}");
         definition.getRuntimeInfo(ExecutionEngine.DI_SPARK_STREAMING, null, ConnectorTopology.NONE);
     }
 
     @Test
     public void testGetRuntimeInfoWrongTopology() {
-        TMongoDBConnectionDefinition definition = new TMongoDBConnectionDefinition();
+        TMongoDBRowDefinition definition = new TMongoDBRowDefinition();
         thrown.expect(TalendRuntimeException.class);
-        thrown.expectMessage("WRONG_CONNECTOR:{component=tMongoDBConnection}");
-        definition.getRuntimeInfo(ExecutionEngine.DI, null, ConnectorTopology.INCOMING);
+        thrown.expectMessage("WRONG_CONNECTOR:{component=tMongoDBRow}");
+        definition.getRuntimeInfo(ExecutionEngine.DI, null, ConnectorTopology.OUTGOING);
     }
 
     @Test
     public void testGetSupportedConnectorTopologies() {
-        TMongoDBConnectionDefinition definition = new TMongoDBConnectionDefinition();
+        TMongoDBRowDefinition definition = new TMongoDBRowDefinition();
         Set<ConnectorTopology> connectorTopologies = definition.getSupportedConnectorTopologies();
 
-        assertThat(connectorTopologies, contains(ConnectorTopology.NONE));
-        assertThat(connectorTopologies,
-                not((contains(ConnectorTopology.INCOMING, ConnectorTopology.OUTGOING, ConnectorTopology.INCOMING_AND_OUTGOING))));
+        assertThat(connectorTopologies, containsInAnyOrder(ConnectorTopology.INCOMING, ConnectorTopology.NONE));
+        assertThat(connectorTopologies, not((contains(ConnectorTopology.OUTGOING, ConnectorTopology.INCOMING_AND_OUTGOING))));
     }
 
     @Test
     public void testGetNestedCompatibleComponentPropertiesClass() {
-        TMongoDBConnectionDefinition definition = new TMongoDBConnectionDefinition();
+        TMongoDBRowDefinition definition = new TMongoDBRowDefinition();
         Class<? extends ComponentProperties>[] propertiesClass = definition.getNestedCompatibleComponentPropertiesClass();
         assertEquals(1, propertiesClass.length);
         assertTrue(propertiesClass[0].equals(MongoDBConnectionProperties.class));
     }
-
 }

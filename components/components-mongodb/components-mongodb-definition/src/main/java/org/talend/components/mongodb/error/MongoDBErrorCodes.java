@@ -34,7 +34,7 @@ public enum MongoDBErrorCodes implements ErrorCode {
 
     private final Collection<String> contextEntries;
 
-    private MongoDBErrorCodes(String code, int httpStatus, String... contextEntries) {
+    MongoDBErrorCodes(String code, int httpStatus, String... contextEntries) {
         this.httpStatus = httpStatus;
         this.code = code;
         this.contextEntries = Arrays.asList(contextEntries);

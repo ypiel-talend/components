@@ -14,12 +14,13 @@ package org.talend.components.mongodb.tmongodboutput;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.talend.components.api.component.AbstractComponentDefinition.NONE;
 import static org.talend.components.api.component.ComponentDefinition.RETURN_ERROR_MESSAGE_PROP;
 import static org.talend.components.api.component.ComponentDefinition.RETURN_TOTAL_RECORD_COUNT_PROP;
 
@@ -27,23 +28,38 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.talend.components.api.component.ConnectorTopology;
 import org.talend.components.api.component.runtime.ExecutionEngine;
+import org.talend.components.api.properties.ComponentProperties;
+import org.talend.components.mongodb.MongoDBCollectionProperties;
+import org.talend.components.mongodb.MongoDBConnectionProperties;
 import org.talend.components.mongodb.common.MongoDBDefinition;
-import org.talend.components.mongodb.tmongodbconnection.TMongoDBConnectionDefinition;
+import org.talend.components.mongodb.common.MongoDBDefinitionTestBasic;
+import org.talend.components.mongodb.tmongodbinput.TMongoDBInputDefinition;
+import org.talend.daikon.exception.TalendRuntimeException;
 import org.talend.daikon.properties.property.Property;
 import org.talend.daikon.runtime.RuntimeInfo;
 
-public class TMongoDBOutputDefinitionTest {
+public class TMongoDBOutputDefinitionTest extends MongoDBDefinitionTestBasic {
+
+    @Rule
+    public final ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void testGetFamilies() {
-        TMongoDBConnectionDefinition definition = new TMongoDBConnectionDefinition();
-        String[] actual = definition.getFamilies();
-        assertEquals(2, actual.length);
-        assertEquals("Databases/MongoDB", Arrays.asList(actual).get(0));
-        assertEquals("Big Data/MongoDB", Arrays.asList(actual).get(1));
+        testGetFamilies(new TMongoDBOutputDefinition());
+    }
+
+    @Test
+    public void testTMongoDBDBOutputDefinition() throws Exception {
+        TMongoDBOutputDefinition definition = new TMongoDBOutputDefinition();
+        testDefinition(definition);
+        assertEquals(false, definition.isStartable());
+        assertEquals(NONE, definition.getPartitioning());
+        assertEquals(true, definition.isSchemaAutoPropagate());
     }
 
     @Test
@@ -79,13 +95,33 @@ public class TMongoDBOutputDefinitionTest {
         TMongoDBOutputDefinition definition = new TMongoDBOutputDefinition();
         Set<ConnectorTopology> connectorTopologies = definition.getSupportedConnectorTopologies();
 
-        assertThat(connectorTopologies, contains(ConnectorTopology.INCOMING, ConnectorTopology.INCOMING_AND_OUTGOING));
+        assertThat(connectorTopologies, containsInAnyOrder(ConnectorTopology.INCOMING, ConnectorTopology.INCOMING_AND_OUTGOING));
         assertThat(connectorTopologies, not((contains(ConnectorTopology.NONE, ConnectorTopology.OUTGOING))));
     }
 
     @Test
-    public void testOtherMethod() {
+    public void testGetRuntimeInfoWrongEngine() {
         TMongoDBOutputDefinition definition = new TMongoDBOutputDefinition();
-        assertFalse(definition.isStartable());
+        thrown.expect(TalendRuntimeException.class);
+        thrown.expectMessage("WRONG_EXECUTION_ENGINE:{component=tMongoDBOutput, requested=DI_SPARK_STREAMING, available=[DI]}");
+        definition.getRuntimeInfo(ExecutionEngine.DI_SPARK_STREAMING, null, ConnectorTopology.NONE);
     }
+
+    @Test
+    public void testGetRuntimeInfoWrongTopology() {
+        TMongoDBOutputDefinition definition = new TMongoDBOutputDefinition();
+        thrown.expect(TalendRuntimeException.class);
+        thrown.expectMessage("WRONG_CONNECTOR:{component=tMongoDBOutput}");
+        definition.getRuntimeInfo(ExecutionEngine.DI, null, ConnectorTopology.NONE);
+    }
+
+    @Test
+    public void testGetNestedCompatibleComponentPropertiesClass() {
+        TMongoDBOutputDefinition definition = new TMongoDBOutputDefinition();
+        Class<? extends ComponentProperties>[] propertiesClass = definition.getNestedCompatibleComponentPropertiesClass();
+        assertEquals(2, propertiesClass.length);
+        assertTrue(propertiesClass[0].equals(MongoDBConnectionProperties.class));
+        assertTrue(propertiesClass[1].equals(MongoDBCollectionProperties.class));
+    }
+
 }

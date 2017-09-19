@@ -38,7 +38,7 @@ public class TMongoDBOutputDefinition extends MongoDBDefinition {
 
     @Override
     public String getPartitioning() {
-        return AUTO;
+        return NONE;
     }
 
     @Override
@@ -50,6 +50,7 @@ public class TMongoDBOutputDefinition extends MongoDBDefinition {
     public RuntimeInfo getRuntimeInfo(ExecutionEngine engine, ComponentProperties properties,
             ConnectorTopology connectorTopology) {
         assertEngineCompatibility(engine);
+        assertConnectorTopologyCompatibility(connectorTopology);
         if (connectorTopology == ConnectorTopology.INCOMING || connectorTopology == ConnectorTopology.INCOMING_AND_OUTGOING) {
             return getCommonRuntimeInfo(SINK_CLASS);
         } else {

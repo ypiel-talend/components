@@ -33,7 +33,7 @@ public class OsgitMongoDBTestIT extends MongoDBTestBase {
 
         return options(composite(ComponentsPaxExamOptions.getOptions()), //
                 linkBundle("org.talend.components-components-common-bundle"), //
-                linkBundle("org.talend.components-components-mongodb-definition"));
+                linkBundle("org.talend.components-components-mongodb-definition-bundle"));
     }
 
 }
