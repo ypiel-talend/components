@@ -57,6 +57,65 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <mongodb.port>${mongodb.port}</mongodb.port>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>0.21.0</version>
+                <configuration>
+                    <showLogs>true</showLogs>
+                    <images>
+                        <image>
+                            <name>mongo:3.4.6</name>
+                            <alias>mongo</alias>
+                            <run>
+                                <ports>
+                                    <port>mongodb.port:27017</port>
+                                </ports>
+                                <env>
+                                    <MONGO_INITDB_ROOT_USERNAME>talend</MONGO_INITDB_ROOT_USERNAME>
+                                    <MONGO_INITDB_ROOT_PASSWORD>talend</MONGO_INITDB_ROOT_PASSWORD>
+                                </env>
+                                <wait>
+                                    <log>waiting for connections on port</log>
+                                    <time>6000000</time>
+                                </wait>
+                            </run>
+                        </image>
+                    </images>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>start</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>start</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${really.skip.tests}</skip>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>stop</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>stop</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${really.skip.tests}</skip>
+                        </configuration>
+                    </execution>
+                </executions>
+
+            </plugin>
+            <plugin>
                 <!-- This plugin is used to generate .link files used for the OSGI test
                     execution with PaxExam -->
                 <groupId>com.github.veithen.alta</groupId>
@@ -101,7 +160,7 @@
                         </goals>
                         <configuration>
                             <instructions>
-                                <Bundle-SymbolicName>org.talend.components.mongodb.lib</Bundle-SymbolicName>
+                                <Bundle-SymbolicName>org.talend.components.mongodb.runtime.lib</Bundle-SymbolicName>
                                 <Bundle-Name>${project.name} lib</Bundle-Name>
                                 <Include-Resource>
                                     {maven-resources},META-INF/maven/${project.groupId}/${project.artifactId}/dependencies.txt=target/classes/META-INF/maven/${project.groupId}/${project.artifactId}/dependencies.txt
@@ -120,8 +179,10 @@
                         <configuration>
                             <classifier>bundle</classifier>
                             <instructions>
-                                <Bundle-SymbolicName>org.talend.components.mongodb.runtim</Bundle-SymbolicName>
-                                <Import-Package>!*internal,org.talend*,org.slf4j*,org.apache.commons*,org.apache.avro.*,com.mongodb.*</Import-Package>
+                                <Bundle-SymbolicName>org.talend.components.mongodb.runtime</Bundle-SymbolicName>
+                                <Import-Package>
+                                    !*internal,org.talend*,org.slf4j*,org.apache.commons*,org.apache.avro.*,com.mongodb.*
+                                </Import-Package>
                                 <Service-Component>*</Service-Component>
                                 <Embed-Dependency>
                                     *;scope=compile|runtime;inline=false;artifactId=!components*|auto-service|pax-url-aether

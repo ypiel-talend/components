@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.net.ssl.SSLSocketFactory;
+
 import org.apache.avro.Schema;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -69,15 +71,30 @@ public class MongoDBSourceOrSink implements MongoDBRuntimeSourceOrSink {
             // Design time
             properties = properties.getReferencedConnectionProperties();
             // FIXME This should not happen - but does as of now
-            if (properties == null)
+            if (properties == null) {
                 throw new IOException(MESSAGES.getMessage("error.refComponentWithoutProperties", refComponentId));
+            }
         }
 
-        MongoClientOptions clientOptions = new MongoClientOptions.Builder().build();
+        MongoClientOptions clientOptions = null;
+        if (properties.useSSL.getValue()) {
+            clientOptions = new MongoClientOptions.Builder().socketFactory(SSLSocketFactory.getDefault()).build();
+        } else {
+            clientOptions = new MongoClientOptions.Builder().build();
+        }
         List<MongoCredential> mongoCredentialList = getCredential(properties);
 
-        ServerAddress serverAddress = new ServerAddress(properties.host.getValue(), properties.port.getValue());
-        mongo = new MongoClient(serverAddress, mongoCredentialList, clientOptions);
+        List<ServerAddress> serverAddressList = getServerAddressList(properties);
+        if (properties.useReplicaSet.getValue()) {
+            if (serverAddressList.size() < 1) {
+                throw new IOException(MESSAGES.getMessage("error.replicaSet.setting"));
+            }
+            mongo = new MongoClient(serverAddressList, mongoCredentialList, clientOptions);
+        } else {
+            mongo = new MongoClient(serverAddressList.get(0), mongoCredentialList, clientOptions);
+        }
+
+        // Check the connection
         mongo.getAddress();
 
         if (container != null) {
@@ -85,19 +102,32 @@ public class MongoDBSourceOrSink implements MongoDBRuntimeSourceOrSink {
             if (!StringUtils.isEmpty(properties.database.getValue())) {
                 DB db = mongo.getDB(properties.database.getValue());
                 container.setComponentData(container.getCurrentComponentId(), KEY_DB, db);
+            } else {
+                throw new IOException(MESSAGES.getMessage("error.db.missing"));
+            }
+        } else {
+            // Check whether have right to list databases when database is not specified
+            if (StringUtils.isEmpty(properties.database.getValue())) {
+                mongo.getDatabaseNames();
             }
         }
 
         return mongo;
     }
 
+    /**
+     * Get collection names list from current database
+     * 
+     * @param container runtime container
+     * 
+     * @return collection names list
+     * @throws IOException connection failed
+     */
     @Override
     public List<NamedThing> getSchemaNames(RuntimeContainer container) throws IOException {
-        // Returns the list with a table names (for the wh, db and schema)
         try {
             DB db = getDatabase(container);
             List<NamedThing> returnList = new ArrayList<>();
-            // Fetch all tables in the db and schema provided
             Set<String> collections = db.getCollectionNames();
             for (String collectionName : collections) {
                 returnList.add(new SimpleNamedThing(collectionName, collectionName));
@@ -109,7 +139,12 @@ public class MongoDBSourceOrSink implements MongoDBRuntimeSourceOrSink {
     }
 
     /**
-     * Get all database names
+     * Get all database names from current connection
+     * 
+     * @param container runtime container
+     * 
+     * @return the database names list
+     * @throws IOException connection failed
      */
     @Override
     public List<NamedThing> getDatabaseNames(RuntimeContainer container) throws IOException {
@@ -130,6 +165,15 @@ public class MongoDBSourceOrSink implements MongoDBRuntimeSourceOrSink {
         }
     }
 
+    /**
+     * Get the collection name which include prefix with db name
+     *
+     * @param container runtime container
+     * @param databases selected databases
+     * 
+     * @return collection names list
+     * @throws IOException connection failed
+     */
     @Override
     public List<NamedThing> getCollectionNames(RuntimeContainer container, List<NamedThing> databases) throws IOException {
         List<NamedThing> returnList = new ArrayList<>();
@@ -138,7 +182,7 @@ public class MongoDBSourceOrSink implements MongoDBRuntimeSourceOrSink {
             for (NamedThing dbName : databases) {
                 Set<String> collectionNames = mongo.getDB(dbName.getName()).getCollectionNames();
                 for (String collectionName : collectionNames) {
-                    String collectionNameWithDB = getCollectionNameWithDB(dbName.getName(), collectionName);
+                    String collectionNameWithDB = dbName + DB_COLLECTION_MARK + collectionName;
                     returnList.add(new SimpleNamedThing(collectionNameWithDB, collectionNameWithDB));
                 }
             }
@@ -148,6 +192,14 @@ public class MongoDBSourceOrSink implements MongoDBRuntimeSourceOrSink {
         return returnList;
     }
 
+    /**
+     * Get db and collection mapping from the selected collection names
+     *
+     * @param selectedCollectionNames The select collection name which are saved like this: [db name]$[collection name]
+     *
+     * @return The da and collection mapping which key is the database name, and the value is the selected collection in the
+     * database
+     */
     @Override
     public Map<String, List<String>> getDBCollectionMapping(Property<List<NamedThing>> selectedCollectionNames) {
         Map<String, List<String>> dbCollectionMapping = new HashMap<>();
@@ -171,15 +223,18 @@ public class MongoDBSourceOrSink implements MongoDBRuntimeSourceOrSink {
 
     /**
      * Get schema of the collection
+     * 
+     * @param container runtime container information
+     * @param collectionName the name of the collection
+     *
+     * @return the schema guess from the collection
+     *
+     * @throws IOException when connection failed
      */
     @Override
     public Schema getEndpointSchema(RuntimeContainer container, String collectionName) throws IOException {
         try {
-
-            // Returns the list with a table names (for the wh, db and schema)
             DB db = getDatabase(container);
-            // build schema
-            List<String> existColumnNames = new ArrayList<String>();
             DBCollection collection = db.getCollection(collectionName);
             return MongoDBSchemaInferrer.get().inferSchema(collection);
         } catch (Exception e) {
@@ -187,17 +242,23 @@ public class MongoDBSourceOrSink implements MongoDBRuntimeSourceOrSink {
         }
     }
 
+    /**
+     * Validate the connection
+     * 
+     * @param container runtime container information
+     * 
+     * @return validate result
+     */
     @Override
     public ValidationResult validate(RuntimeContainer container) {
+        ValidationResultMutable vr = new ValidationResultMutable();
         try {
             connect(container);
         } catch (Exception e) {
-            ValidationResultMutable vr = new ValidationResultMutable();
             vr.setMessage(e.getMessage());
             vr.setStatus(ValidationResult.Result.ERROR);
             return vr;
         }
-        ValidationResultMutable vr = new ValidationResultMutable();
         vr.setStatus(ValidationResult.Result.OK);
         vr.setMessage(MESSAGES.getMessage("connection.success"));
         return vr;
@@ -211,6 +272,12 @@ public class MongoDBSourceOrSink implements MongoDBRuntimeSourceOrSink {
 
     /**
      * Get the database instance based on setting of database of connection properties
+     * 
+     * @param container runtime container
+     *
+     * @return DB instance
+     * 
+     * @throws Exception specified db is not be shared
      */
 
     private DB getDatabase(RuntimeContainer container) throws Exception {
@@ -227,11 +294,14 @@ public class MongoDBSourceOrSink implements MongoDBRuntimeSourceOrSink {
         return db;
     }
 
-    private String getCollectionNameWithDB(String dbName, String collectionName) {
-        return dbName + DB_COLLECTION_MARK + collectionName;
-    }
-
-    private List<MongoCredential> getCredential(MongoDBConnectionProperties properties) {
+    /**
+     * Get credential list from the properties
+     * 
+     * @param properties the connection properties
+     * 
+     * @return credential list if required authentication is required
+     */
+    private List<MongoCredential> getCredential(MongoDBConnectionProperties properties) throws IOException {
         List<MongoCredential> mongoCredentialList = new ArrayList<MongoCredential>();
         if (properties.requiredAuthentication.getValue()) {
             MongoCredential mongoCredential = null;
@@ -266,6 +336,7 @@ public class MongoDBSourceOrSink implements MongoDBRuntimeSourceOrSink {
                             properties.authenticationDatabase.getValue(), password.toCharArray());
                 }
             } else {
+                // TODO need to recheck whether we can do like this in new framework.
                 System.setProperty("java.security.krb5.realm", properties.kerberos.realm.getValue());
                 System.setProperty("java.security.krb5.kdc", properties.kerberos.kdcServer.getValue());
                 System.setProperty("javax.security.auth.useSubjectCredsOnly", "false");
@@ -275,6 +346,25 @@ public class MongoDBSourceOrSink implements MongoDBRuntimeSourceOrSink {
             mongoCredentialList.add(mongoCredential);
         }
         return mongoCredentialList;
+
+    }
+
+    private List<ServerAddress> getServerAddressList(MongoDBConnectionProperties properties) throws IOException {
+        List<ServerAddress> serverAddressList = new java.util.ArrayList<ServerAddress>();
+        if (properties.useReplicaSet.getValue()) {
+            Object replicatSetHosts = properties.replicaSetTable.host.getValue();
+            Object replicatSetPorts = properties.replicaSetTable.port.getValue();
+            if (replicatSetHosts != null && replicatSetPorts != null && (replicatSetHosts instanceof List)
+                    && (replicatSetPorts instanceof List)) {
+                for (int i = 0; i < ((List) replicatSetHosts).size(); i++) {
+                    serverAddressList.add(new com.mongodb.ServerAddress(((List<String>) replicatSetHosts).get(i),
+                            ((List<Integer>) replicatSetPorts).get(i)));
+                }
+            }
+        } else {
+            serverAddressList.add(new ServerAddress(properties.host.getValue(), properties.port.getValue()));
+        }
+        return serverAddressList;
     }
 
 }

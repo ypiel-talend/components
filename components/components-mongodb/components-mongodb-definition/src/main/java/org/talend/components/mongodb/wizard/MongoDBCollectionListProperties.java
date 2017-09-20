@@ -19,6 +19,7 @@ import static org.talend.components.mongodb.common.MongoDBDefinition.getSandboxe
 import static org.talend.daikon.properties.presentation.Widget.widget;
 import static org.talend.daikon.properties.property.PropertyFactory.newProperty;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -27,16 +28,19 @@ import java.util.Set;
 import org.apache.avro.Schema;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.TypeLiteral;
+import org.talend.components.api.exception.ComponentException;
 import org.talend.components.api.properties.ComponentPropertiesImpl;
 import org.talend.components.mongodb.MongoDBCollectionProperties;
 import org.talend.components.mongodb.MongoDBConnectionProperties;
 import org.talend.components.mongodb.MongoDBRuntimeSourceOrSink;
+import org.talend.components.mongodb.error.MongoDBErrorCodes;
 import org.talend.daikon.NamedThing;
 import org.talend.daikon.SimpleNamedThing;
 import org.talend.daikon.i18n.GlobalI18N;
 import org.talend.daikon.i18n.I18nMessages;
 import org.talend.daikon.properties.Properties;
 import org.talend.daikon.properties.ValidationResult;
+import org.talend.daikon.properties.ValidationResultMutable;
 import org.talend.daikon.properties.presentation.Form;
 import org.talend.daikon.properties.presentation.Widget;
 import org.talend.daikon.properties.property.Property;
@@ -102,12 +106,20 @@ public class MongoDBCollectionListProperties extends ComponentPropertiesImpl {
     /**
      * Show database list
      */
-    public void beforeFormPresentDatabase() throws Exception {
+    public ValidationResult beforeFormPresentDatabase() throws Exception {
         try (SandboxedInstance sandboxedInstance = getSandboxedInstance(SOURCE_OR_SINK_CLASS, USE_CURRENT_JVM_PROPS)) {
             if (StringUtils.isEmpty(connection.database.getValue())) {
                 MongoDBRuntimeSourceOrSink ss = (MongoDBRuntimeSourceOrSink) sandboxedInstance.getInstance();
                 ss.initialize(null, connection);
-                databaseNames = ss.getDatabaseNames(null);
+                try {
+                    databaseNames = ss.getDatabaseNames(null);
+                } catch (IOException e) {
+                    ValidationResultMutable vr = new ValidationResultMutable();
+                    vr.setMessage(e.getMessage());
+                    vr.setStatus(ValidationResult.Result.ERROR);
+                    getForm(FORM_DATABASE).setAllowBack(true);
+                    return vr;
+                }
             } else {
                 NamedThing dbName = new SimpleNamedThing(connection.database.getValue(), connection.database.getValue());
                 databaseNames = Arrays.asList(dbName);
@@ -116,20 +128,30 @@ public class MongoDBCollectionListProperties extends ComponentPropertiesImpl {
             getForm(FORM_DATABASE).setAllowBack(true);
             getForm(FORM_DATABASE).setAllowForward(true);
             getForm(FORM_DATABASE).setAllowFinish(true);
+            return ValidationResult.OK;
         }
     }
 
     /**
      * Show collections list for specify database
      */
-    public void beforeFormPresentCollection() throws Exception {
+    public ValidationResult beforeFormPresentCollection() throws Exception {
         try (SandboxedInstance sandboxedInstance = getSandboxedInstance(SOURCE_OR_SINK_CLASS, USE_CURRENT_JVM_PROPS)) {
             MongoDBRuntimeSourceOrSink ss = (MongoDBRuntimeSourceOrSink) sandboxedInstance.getInstance();
             ss.initialize(null, connection);
-            collectionNames = ss.getCollectionNames(null, selectedDatabaseNames.getValue());
+            try {
+                collectionNames = ss.getCollectionNames(null, selectedDatabaseNames.getValue());
+            } catch (IOException e) {
+                ValidationResultMutable vr = new ValidationResultMutable();
+                vr.setMessage(e.getMessage());
+                vr.setStatus(ValidationResult.Result.ERROR);
+                getForm(FORM_COLLECTION).setAllowBack(true);
+                return vr;
+            }
             selectedCollectionNames.setPossibleValues(collectionNames);
             getForm(FORM_COLLECTION).setAllowBack(true);
             getForm(FORM_COLLECTION).setAllowFinish(true);
+            return ValidationResult.OK;
         }
     }
 

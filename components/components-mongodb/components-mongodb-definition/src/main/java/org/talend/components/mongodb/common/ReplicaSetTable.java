@@ -39,6 +39,8 @@ public class ReplicaSetTable extends ComponentPropertiesImpl {
 
     public ReplicaSetTable(String name) {
         super(name);
+        host.setRequired();
+        port.setRequired();
     }
 
     @Override

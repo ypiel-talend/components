@@ -270,6 +270,7 @@ public class MongoDBConnectionProperties extends ComponentPropertiesImpl {
             if (vr.getStatus() == ValidationResult.Result.OK) {
                 vr.setMessage(MESSAGES.getMessage("connection.success"));
                 getForm(FORM_WIZARD).setAllowForward(true);
+                getForm(FORM_WIZARD).setAllowFinish(true);
             } else {
                 getForm(FORM_WIZARD).setAllowForward(false);
             }

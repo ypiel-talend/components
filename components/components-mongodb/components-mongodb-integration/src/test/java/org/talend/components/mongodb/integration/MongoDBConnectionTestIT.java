@@ -14,56 +14,32 @@ package org.talend.components.mongodb.integration;
 
 import static org.junit.Assert.assertEquals;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.talend.components.mongodb.MongoDBConnectionProperties;
 import org.talend.daikon.properties.ValidationResult;
 
-@Ignore
 public class MongoDBConnectionTestIT extends MongoDBTestBasic {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MongoDBConnectionTestIT.class);
+
+    private static final String DEFAULT_DB = "testdb";
 
     @Test
     public void testValidateConnectionWrongHost() throws Throwable {
         MongoDBConnectionProperties properties = createConnectionProperties();
         properties.host.setValue("WRONG_HOST");
-        properties.validateTestConnection();
 
         ValidationResult result = properties.validateTestConnection();
         assertEquals(ValidationResult.Result.ERROR, result.getStatus());
         LOGGER.debug(result.getMessage());
-    }
-
-    @Ignore("Not sure docker setting problem or not")
-    @Test
-    public void testValidateConnectionWrongPWD() throws Throwable {
-        MongoDBConnectionProperties properties = createConnectionProperties();
-        properties.requiredAuthentication.setValue(true);
-        properties.userPassword.password.setValue("WRONG_PWD");
-        properties.validateTestConnection();
-
-        ValidationResult result = properties.validateTestConnection();
-        assertEquals(ValidationResult.Result.ERROR, result.getStatus());
-        LOGGER.debug(result.getMessage());
-    }
-
-    @Test
-    public void testValidateConnection() throws Throwable {
-        MongoDBConnectionProperties properties = createConnectionProperties();
-        properties.validateTestConnection();
-
-        ValidationResult result = properties.validateTestConnection();
-        assertEquals(ValidationResult.Result.OK, result.getStatus());
-        LOGGER.debug(result.getMessage());
-
     }
 
     @Test
     public void testValidateConnectionAuth() throws Throwable {
         MongoDBConnectionProperties properties = createConnectionProperties();
+        properties.database.setValue(DEFAULT_DB);
         properties.requiredAuthentication.setValue(true);
         properties.validateTestConnection();
 
@@ -71,10 +47,5 @@ public class MongoDBConnectionTestIT extends MongoDBTestBasic {
         assertEquals(ValidationResult.Result.OK, result.getStatus());
         LOGGER.debug(result.getMessage());
 
-    }
-
-    @Override
-    public void prepareTestData() {
-        // TODO
     }
 }

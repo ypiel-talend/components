@@ -25,7 +25,12 @@ public abstract class MongoDBTestBasic {
 
     private static final String PASSWORD = "talend";
 
-    private static final Integer DEFAULT_PORT = 27017;
+    private static final Integer MONGODB_PORT;
+
+    static {
+        String portStr = System.getProperty("mongodb.port");
+        MONGODB_PORT = portStr != null ? Integer.parseInt(portStr) : 27017;
+    }
 
     /**
      * @return the properties for this dataset, fully initialized with the default values and the datastore credentials
@@ -36,41 +41,12 @@ public abstract class MongoDBTestBasic {
         MongoDBConnectionProperties properties = new MongoDBConnectionProperties("properties");
         properties.init();
 
-        String portStr = System.getProperty("mongodb.port");
-        if (portStr != null) {
-            properties.port.setValue(Integer.parseInt(portStr));
-        } else {
-            properties.port.setValue(DEFAULT_PORT);
-        }
+        properties.port.setValue(MONGODB_PORT);
         // FIXME when docker of integrate is ready need recheck this.
         properties.userPassword.userId.setValue(USER_ID);
         properties.userPassword.password.setValue(PASSWORD);
 
         return properties;
     }
-
-    public RuntimeContainer getRuntimeContainer(final String componentId) {
-        final Map<String, Object> globalMap = new HashMap<String, Object>();
-        return new RuntimeContainer() {
-
-            public Object getComponentData(String componentId, String key) {
-                return globalMap.get(componentId + "_" + key);
-            }
-
-            public void setComponentData(String componentId, String key, Object data) {
-                globalMap.put(componentId + "_" + key, data);
-            }
-
-            public String getCurrentComponentId() {
-                return componentId;
-            }
-
-            public Object getGlobalData(String key) {
-                return globalMap.get(key);
-            }
-        };
-    }
-
-    public abstract void prepareTestData();
 
 }

@@ -16,8 +16,8 @@
 
     <modules>
         <module>components-mongodb-definition</module>
-        <module>components-mongodb-runtime</module>
         <module>components-mongodb-integration</module>
+        <module>components-mongodb-runtime</module>
     </modules>
 
 </project>
