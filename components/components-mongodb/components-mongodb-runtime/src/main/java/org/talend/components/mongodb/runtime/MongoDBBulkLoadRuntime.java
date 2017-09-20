@@ -1,11 +1,8 @@
 package org.talend.components.mongodb.runtime;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.security.InvalidKeyException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
@@ -20,6 +17,7 @@ import org.talend.components.mongodb.MongoDBConnectionProperties.AuthenticationM
 import org.talend.components.mongodb.tmongodbbulkload.TMongoDBBulkLoadDefinition;
 import org.talend.components.mongodb.tmongodbbulkload.TMongoDBBulkLoadProperties;
 import org.talend.components.mongodb.tmongodbbulkload.TMongoDBBulkLoadProperties.DataAction;
+import org.talend.daikon.avro.SchemaConstants;
 import org.talend.daikon.i18n.GlobalI18N;
 import org.talend.daikon.i18n.I18nMessages;
 import org.talend.daikon.properties.ValidationResult;
@@ -28,6 +26,8 @@ import org.talend.daikon.properties.ValidationResultMutable;
 public class MongoDBBulkLoadRuntime
         implements ComponentDriverInitialization<ComponentProperties>, RuntimableRuntime<ComponentProperties> {
 
+    private static final long serialVersionUID = 829731606958765194L;
+    
     RuntimeContainer runtimeContainer;
 
     String errorMessage = "";
@@ -44,6 +44,7 @@ public class MongoDBBulkLoadRuntime
     @Override
     public ValidationResult initialize(RuntimeContainer runtimeContainer, ComponentProperties properties) {
         this.bulkProperties = (TMongoDBBulkLoadProperties) properties;
+        this.runtimeContainer = runtimeContainer;
         ValidationResultMutable vr = new ValidationResultMutable();
         vr.setStatus(ValidationResult.Result.ERROR);
         if (MongoDBRuntimeHelper.isVacant(bulkProperties.mongoDBHome.getValue())) {
@@ -62,7 +63,7 @@ public class MongoDBBulkLoadRuntime
 
     @Override
     public void runAtDriver(RuntimeContainer container) {
-        this.runtimeContainer = container;
+
         try {
             ThreadRun(prepareCommend());
         } catch (Exception e) {
@@ -76,7 +77,7 @@ public class MongoDBBulkLoadRuntime
 
     }
 
-    private String[] prepareCommend() {
+    protected String[] prepareCommend() {
         List<String> args = new ArrayList<String>();
         args.add(bulkProperties.mongoDBHome.getValue() + "/bin/mongoimport");
         ProcessBuilder runtime = new ProcessBuilder(args);
@@ -101,13 +102,16 @@ public class MongoDBBulkLoadRuntime
                     List<Integer> values = bulkProperties.connection.replicaSetTable.port.getValue();
                     for (int i = 0; i < hosts.size(); i++) {
                         if (!MongoDBRuntimeHelper.isVacant(hosts.get(i))) {
-                            args.add(hosts.get(i));
+                            repHosts.append(hosts.get(i));
                         }
                         if (!MongoDBRuntimeHelper.isVacant(String.valueOf(values.get(i)))) {
-                            args.add(String.valueOf(values.get(i)));
+                            repHosts.append(':').append(String.valueOf(values.get(i))).append(',');
                         }
                     }
 
+                }
+                if (repHosts.length() > 0) {
+                    repHosts.deleteCharAt(repHosts.length() - 1);
                 }
                 args.add("--host");
                 args.add(repHosts.toString());
@@ -125,9 +129,9 @@ public class MongoDBBulkLoadRuntime
 
         boolean useAuthenticationDatabase = bulkProperties.connection.setAuthenticationDatabase.getValue();
         if (bulkProperties.connection.requiredAuthentication.getValue()) {
-            if (bulkProperties.connection.authenticationMechanism.getValue().equals(AuthenticationMechanism.KERBEROS_MEC)) {// GSSAPI
-                                                                                                                            // SASL
-                                                                                                                            // (Kerberos)
+            if (bulkProperties.connection.authenticationMechanism.getValue().equals(AuthenticationMechanism.KERBEROS_MEC)) {
+                // GSSAPI SASL (KERBEROS)
+                // SSL is not compatible with Kerberos in mongoimport
                 if (!bulkProperties.connection.useSSL.getValue()) {
                     args.add("--authenticationMechanism");
                     args.add("GSSAPI");
@@ -137,10 +141,8 @@ public class MongoDBBulkLoadRuntime
                     args.add(bulkProperties.connection.kerberos.kdcServer.getValue());
                     args.add("--username");
                     args.add(bulkProperties.connection.kerberos.userPrincipal.getValue());
-                    if (useAuthenticationDatabase) {
-                        args.add("--authenticationDatabase");
-                        args.add(bulkProperties.connection.authenticationDatabase.getValue());
-                    }
+                    args.add("--authenticationDatabase");
+                    args.add(bulkProperties.krbAuthDatabase.getValue());
 
                 }
             } else {
@@ -148,18 +150,22 @@ public class MongoDBBulkLoadRuntime
                 args.add(bulkProperties.connection.userPassword.userId.getValue());
                 args.add("--password");
                 args.add(bulkProperties.connection.userPassword.password.getValue());
+                String authenticationDatabase = bulkProperties.connection.authenticationDatabase.getValue();
                 if (bulkProperties.connection.authenticationMechanism.getValue().equals(AuthenticationMechanism.SCRAMSHA1_MEC)) {
                     args.add("--authenticationMechanism");
                     args.add("SCRAM-SHA-1");
-                    args.add("--authenticationDatabase");
+                    if (useAuthenticationDatabase && !MongoDBRuntimeHelper.isVacant(authenticationDatabase)) {
+                        args.add("--authenticationDatabase");
+                        args.add(authenticationDatabase);
+                    }
                     // X509 can't work today without adding a property to locate the x509 certificate
-                } else if (bulkProperties.connection.authenticationMechanism.getValue().equals("MONGODBCR_MEC")) {
-                    // this authentication doesn't exist now
+                } else if (bulkProperties.connection.authenticationMechanism.getValue()
+                        .equals(AuthenticationMechanism.MONGODBCR_MEC)) {
                     args.add("--authenticationMechanism");
                     args.add("MONGODB-CR");
-                    if (useAuthenticationDatabase) {
+                    if (useAuthenticationDatabase && !MongoDBRuntimeHelper.isVacant(authenticationDatabase)) {
                         args.add("--authenticationDatabase");
-                        args.add(bulkProperties.connection.authenticationDatabase.getValue());
+                        args.add(authenticationDatabase);
                     }
                 } else if (bulkProperties.connection.authenticationMechanism.getValue()
                         .equals(AuthenticationMechanism.PLAIN_MEC)) {
@@ -238,30 +244,33 @@ public class MongoDBBulkLoadRuntime
         for (String s : args) {
             sb.append(s + " ");
         }
+        String componentId = runtimeContainer.getCurrentComponentId();
         LOGGER.info(" Execute command " + sb.toString() + ".");
         if (bulkProperties.connection.useReplicaSet.getValue()) {
-            LOGGER.info(" Start to import the data");
+            LOGGER.info(componentId + " - Start to import the data");
         } else {
-            LOGGER.info(" Start to import the data into [" + bulkProperties.connection.host.getValue() + ":"
-                    + bulkProperties.connection.port.getValue() + "/" + bulkProperties.connection.name.getValue() + "]");
+            LOGGER.info(componentId + " - Start to import the data into [" + bulkProperties.connection.host.getValue() + ":"
+                    + bulkProperties.connection.port.getValue() + "/" + bulkProperties.connection.database.getValue() + "]");
         }
 
         return args.toArray(new String[0]);
 
     }
 
-    private String getDBColumn() {
+    protected String getDBColumn() {
         Schema schema = bulkProperties.collection.main.schema.getValue();
         List<Field> fields = schema.getFields();
         StringBuffer sb = new StringBuffer();
         for (Field field : fields) {
-            sb.append(field.getProp("talend.field.dbColumnName")).append(',');
+            sb.append(field.getProp(SchemaConstants.TALEND_COLUMN_DB_COLUMN_NAME)).append(',');
         }
-        sb.deleteCharAt(sb.length() - 1);
+        if (sb.length() > 0) {
+            sb.deleteCharAt(sb.length() - 1);
+        }
         return sb.toString();
     }
 
-    public void ThreadRun(String[] args) throws IOException, InterruptedException {
+    protected int ThreadRun(String[] args) throws IOException, InterruptedException {
 
         ProcessBuilder runtime = new ProcessBuilder(args);
 
@@ -306,25 +315,29 @@ public class MongoDBBulkLoadRuntime
         if (bulkProperties.printLog.getValue()) {
             printLog(process);
         }
-        process.waitFor();
+        int status = process.waitFor();
         normal.interrupt();
+        return status;
 
     }
 
-    private void printLog(final Process process) {
+    protected void printLog(final Process process) {
         Thread error = new Thread() {
 
             public void run() {
                 try {
                     java.io.BufferedReader reader = new java.io.BufferedReader(
                             new java.io.InputStreamReader(process.getErrorStream()));
+                    StringBuffer messages = new StringBuffer();
                     String line = "";
                     try {
                         while ((line = reader.readLine()) != null) {
                             System.err.println(line);
+                            messages.append(line);
                         }
                     } finally {
                         reader.close();
+                        errorMessage = messages.toString();
                     }
                 } catch (java.io.IOException ioe) {
                     ioe.printStackTrace();
@@ -337,8 +350,8 @@ public class MongoDBBulkLoadRuntime
     private void setReturnValues() {
         String componentId = runtimeContainer.getCurrentComponentId();
 
-        runtimeContainer.setComponentData(componentId, TMongoDBBulkLoadDefinition.RETURN_ERROR_MESSAGE, "ffff");
-        runtimeContainer.setComponentData(componentId, TMongoDBBulkLoadDefinition.RETURN_TOTAL_RECORD_COUNT, "ffff");
+        runtimeContainer.setComponentData(componentId, TMongoDBBulkLoadDefinition.RETURN_ERROR_MESSAGE, errorMessage);
+        runtimeContainer.setComponentData(componentId, TMongoDBBulkLoadDefinition.RETURN_TOTAL_RECORD_COUNT, NB_LINE);
     }
 
 }
