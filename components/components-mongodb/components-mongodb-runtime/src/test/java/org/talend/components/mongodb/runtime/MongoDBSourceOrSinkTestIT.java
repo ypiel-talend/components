@@ -47,10 +47,6 @@ public class MongoDBSourceOrSinkTestIT extends MongoDBTestBasic {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MongoDBSourceOrSinkTestIT.class);
 
-    private static final String CONNECTION_COMP_ID = "tMongoDBConnection_1";
-
-    private static final String DEFAULT_DB = "testdb";
-
     @Rule
     public final ExpectedException thrown = ExpectedException.none();
 
@@ -66,7 +62,7 @@ public class MongoDBSourceOrSinkTestIT extends MongoDBTestBasic {
         MongoDBSourceOrSink sourceOrSink = new MongoDBSourceOrSink();
         assertNull(sourceOrSink.properties);
         MongoDBConnectionProperties properties = createConnectionProperties();
-        RuntimeContainer container = getRuntimeContainer(CONNECTION_COMP_ID);
+        RuntimeContainer container = getRuntimeContainer(CONNECTION_COMP_ID, true);
         sourceOrSink.initialize(container, properties);
         assertNotNull(sourceOrSink.properties);
 
@@ -96,13 +92,13 @@ public class MongoDBSourceOrSinkTestIT extends MongoDBTestBasic {
     public void testValidateWithRuntimeContainer() {
         MongoDBSourceOrSink sourceOrSink = getInitializedSourceOrSink();
         // Database name missing
-        ValidationResult resultError = sourceOrSink.validate(getRuntimeContainer(CONNECTION_COMP_ID));
+        ValidationResult resultError = sourceOrSink.validate(getRuntimeContainer(CONNECTION_COMP_ID, true));
         LOGGER.debug(resultError.getMessage());
         assertEquals(ValidationResult.Result.ERROR, resultError.getStatus());
 
         // Specify the database name
         sourceOrSink.properties.database.setValue(DEFAULT_DB);
-        ValidationResult resultOK = sourceOrSink.validate(getRuntimeContainer(CONNECTION_COMP_ID));
+        ValidationResult resultOK = sourceOrSink.validate(getRuntimeContainer(CONNECTION_COMP_ID, true));
         LOGGER.debug(resultOK.getMessage());
         assertEquals(ValidationResult.Result.OK, resultOK.getStatus());
 
@@ -232,14 +228,6 @@ public class MongoDBSourceOrSinkTestIT extends MongoDBTestBasic {
     @Test
     public void getEndpointSchema() throws Exception {
         // Need to implement
-    }
-
-    protected MongoDBSourceOrSink getInitializedSourceOrSink() {
-        MongoDBSourceOrSink sourceOrSink = new MongoDBSourceOrSink();
-        MongoDBConnectionProperties properties = createConnectionProperties();
-        RuntimeContainer container = getRuntimeContainer(CONNECTION_COMP_ID);
-        sourceOrSink.initialize(container, properties);
-        return sourceOrSink;
     }
 
 }

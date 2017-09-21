@@ -38,4 +38,8 @@ public class TMongoDBCloseProperties extends ComponentPropertiesImpl {
         Widget compListWidget = widget(referencedComponent).setWidgetType(Widget.COMPONENT_REFERENCE_WIDGET_TYPE);
         mainForm.addRow(compListWidget);
     }
+
+    public String getReferencedComponentId() {
+        return referencedComponent.componentInstanceId.getValue();
+    }
 }
