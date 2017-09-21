@@ -301,7 +301,7 @@ public class MongoDBSourceOrSink implements MongoDBRuntimeSourceOrSink {
      * 
      * @return credential list if required authentication is required
      */
-    private List<MongoCredential> getCredential(MongoDBConnectionProperties properties) throws IOException {
+    protected List<MongoCredential> getCredential(MongoDBConnectionProperties properties) throws IOException {
         List<MongoCredential> mongoCredentialList = new ArrayList<MongoCredential>();
         if (properties.requiredAuthentication.getValue()) {
             MongoCredential mongoCredential = null;
@@ -311,28 +311,27 @@ public class MongoDBSourceOrSink implements MongoDBRuntimeSourceOrSink {
                             .equals(properties.authenticationMechanism.getValue()))
                     || (MongoDBConnectionProperties.AuthenticationMechanism.SCRAMSHA1_MEC
                             .equals(properties.authenticationMechanism.getValue()))) {
-                String userId = properties.userPassword.userId.getName();
-                String password = properties.userPassword.password.getName();
+                String userId = properties.userPassword.userId.getValue();
+                String password = properties.userPassword.password.getValue();
                 if (userId == null || password == null) {
-                    throw new IllegalArgumentException("Please check user password!");
+                    throw new IllegalArgumentException(MESSAGES.getMessage("error.usernamepwd.missing"));
                 }
                 if ((MongoDBConnectionProperties.AuthenticationMechanism.NEGOTIATE_MEC
                         .equals(properties.authenticationMechanism.getValue()))) {
                     if (MongoDBConnectionProperties.DBVersion.MONGODB_3_0_X.equals(properties.dbVersion.getValue())
                             || MongoDBConnectionProperties.DBVersion.MONGODB_3_2_X.equals(properties.dbVersion.getValue())) {
-                        mongoCredential = com.mongodb.MongoCredential.createCredential(userId,
-                                properties.authenticationDatabase.getValue(), password.toCharArray());
+                        mongoCredential = MongoCredential.createCredential(userId, properties.authenticationDatabase.getValue(),
+                                password.toCharArray());
                     } else {
-                        mongoCredential = com.mongodb.MongoCredential.createMongoCRCredential(userId,
+                        mongoCredential = MongoCredential.createMongoCRCredential(userId,
                                 properties.authenticationDatabase.getValue(), password.toCharArray());
                     }
                 } else if (MongoDBConnectionProperties.AuthenticationMechanism.PLAIN_MEC
                         .equals(properties.authenticationMechanism.getValue())) {
-                    mongoCredential = com.mongodb.MongoCredential.createPlainCredential(userId, "$external",
-                            password.toCharArray());
+                    mongoCredential = MongoCredential.createPlainCredential(userId, "$external", password.toCharArray());
                 } else if (MongoDBConnectionProperties.AuthenticationMechanism.SCRAMSHA1_MEC
                         .equals(properties.authenticationMechanism.getValue())) {
-                    mongoCredential = com.mongodb.MongoCredential.createScramSha1Credential(userId,
+                    mongoCredential = MongoCredential.createScramSha1Credential(userId,
                             properties.authenticationDatabase.getValue(), password.toCharArray());
                 }
             } else {
@@ -340,8 +339,7 @@ public class MongoDBSourceOrSink implements MongoDBRuntimeSourceOrSink {
                 System.setProperty("java.security.krb5.realm", properties.kerberos.realm.getValue());
                 System.setProperty("java.security.krb5.kdc", properties.kerberos.kdcServer.getValue());
                 System.setProperty("javax.security.auth.useSubjectCredsOnly", "false");
-                mongoCredential = com.mongodb.MongoCredential
-                        .createGSSAPICredential(properties.kerberos.userPrincipal.getValue());
+                mongoCredential = MongoCredential.createGSSAPICredential(properties.kerberos.userPrincipal.getValue());
             }
             mongoCredentialList.add(mongoCredential);
         }
@@ -349,7 +347,7 @@ public class MongoDBSourceOrSink implements MongoDBRuntimeSourceOrSink {
 
     }
 
-    private List<ServerAddress> getServerAddressList(MongoDBConnectionProperties properties) throws IOException {
+    protected List<ServerAddress> getServerAddressList(MongoDBConnectionProperties properties) throws IOException {
         List<ServerAddress> serverAddressList = new java.util.ArrayList<ServerAddress>();
         if (properties.useReplicaSet.getValue()) {
             Object replicatSetHosts = properties.replicaSetTable.host.getValue();
@@ -357,9 +355,11 @@ public class MongoDBSourceOrSink implements MongoDBRuntimeSourceOrSink {
             if (replicatSetHosts != null && replicatSetPorts != null && (replicatSetHosts instanceof List)
                     && (replicatSetPorts instanceof List)) {
                 for (int i = 0; i < ((List) replicatSetHosts).size(); i++) {
-                    serverAddressList.add(new com.mongodb.ServerAddress(((List<String>) replicatSetHosts).get(i),
+                    serverAddressList.add(new ServerAddress(((List<String>) replicatSetHosts).get(i),
                             ((List<Integer>) replicatSetPorts).get(i)));
                 }
+            }else{
+                throw new IOException(MESSAGES.getMessage("error.replicaSet.setting"));
             }
         } else {
             serverAddressList.add(new ServerAddress(properties.host.getValue(), properties.port.getValue()));

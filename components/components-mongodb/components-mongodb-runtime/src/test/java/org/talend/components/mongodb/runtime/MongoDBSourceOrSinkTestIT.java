@@ -17,8 +17,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.talend.daikon.properties.property.PropertyFactory.newProperty;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +28,9 @@ import java.util.Map;
 import org.apache.commons.lang3.reflect.TypeLiteral;
 import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.talend.components.api.container.RuntimeContainer;
@@ -36,6 +40,9 @@ import org.talend.daikon.SimpleNamedThing;
 import org.talend.daikon.properties.ValidationResult;
 import org.talend.daikon.properties.property.Property;
 
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
+
 public class MongoDBSourceOrSinkTestIT extends MongoDBTestBasic {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MongoDBSourceOrSinkTestIT.class);
@@ -44,12 +51,16 @@ public class MongoDBSourceOrSinkTestIT extends MongoDBTestBasic {
 
     private static final String DEFAULT_DB = "testdb";
 
+    @Rule
+    public final ExpectedException thrown = ExpectedException.none();
+
     @Before
     @Override
     public void prepareTestData() {
         // Nothing to do
     }
 
+    @Ignore("Test environment is unavailable")
     @Test
     public void testInitialize() throws Exception {
         MongoDBSourceOrSink sourceOrSink = new MongoDBSourceOrSink();
@@ -65,6 +76,7 @@ public class MongoDBSourceOrSinkTestIT extends MongoDBTestBasic {
      * If active the auth and not specify the database,
      * then would get error authorized command "listDatabases"
      */
+    @Ignore("Test environment is unavailable")
     @Test
     public void testValidate() {
         MongoDBSourceOrSink sourceOrSink = getInitializedSourceOrSink();
@@ -79,6 +91,7 @@ public class MongoDBSourceOrSinkTestIT extends MongoDBTestBasic {
      * When runtime container is not empty
      * if the database is not specified, throw error notice
      */
+    @Ignore("Test environment is unavailable")
     @Test
     public void testValidateWithRuntimeContainer() {
         MongoDBSourceOrSink sourceOrSink = getInitializedSourceOrSink();
@@ -104,6 +117,42 @@ public class MongoDBSourceOrSinkTestIT extends MongoDBTestBasic {
         ValidationResult result = sourceOrSink.validate(null);
         LOGGER.debug(result.getMessage());
         assertEquals(ValidationResult.Result.ERROR, result.getStatus());
+    }
+
+    @Test
+    public void testGetCredential() throws IOException {
+        MongoDBSourceOrSink sourceOrSink = getInitializedSourceOrSink();
+        sourceOrSink.properties.requiredAuthentication.setValue(true);
+        List<MongoCredential> credentialList = sourceOrSink.getCredential(sourceOrSink.properties);
+        assertEquals(1, credentialList.size());
+        assertNull(credentialList.get(0).getMechanism());
+
+        sourceOrSink.properties.dbVersion.setValue(MongoDBConnectionProperties.DBVersion.MONGODB_2_5_X);
+        credentialList = sourceOrSink.getCredential(sourceOrSink.properties);
+        assertEquals(1, credentialList.size());
+        assertEquals("MONGODB-CR", credentialList.get(0).getMechanism());
+
+        sourceOrSink.properties.authenticationMechanism.setValue(MongoDBConnectionProperties.AuthenticationMechanism.PLAIN_MEC);
+        credentialList = sourceOrSink.getCredential(sourceOrSink.properties);
+        assertEquals(1, credentialList.size());
+        assertEquals("PLAIN", credentialList.get(0).getMechanism());
+
+        sourceOrSink.properties.authenticationMechanism
+                .setValue(MongoDBConnectionProperties.AuthenticationMechanism.KERBEROS_MEC);
+        credentialList = sourceOrSink.getCredential(sourceOrSink.properties);
+        assertEquals(1, credentialList.size());
+        assertEquals("GSSAPI", credentialList.get(0).getMechanism());
+
+        sourceOrSink.properties.authenticationMechanism
+                .setValue(MongoDBConnectionProperties.AuthenticationMechanism.SCRAMSHA1_MEC);
+        credentialList = sourceOrSink.getCredential(sourceOrSink.properties);
+        assertEquals(1, credentialList.size());
+        assertEquals("SCRAM-SHA-1", credentialList.get(0).getMechanism());
+
+        sourceOrSink.properties.userPassword.password.setValue(null);
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Username or password missing");
+        credentialList = sourceOrSink.getCredential(sourceOrSink.properties);
     }
 
     @Ignore
@@ -143,6 +192,39 @@ public class MongoDBSourceOrSinkTestIT extends MongoDBTestBasic {
         assertTrue(dbCollectionMapping.get("test_2").containsAll(Arrays.asList("collection_3")));
         assertTrue(dbCollectionMapping.get("test_3")
                 .containsAll(Arrays.asList("collection_4", "collection_5", "collection_6", "collection_7")));
+
+    }
+
+    @Test
+    public void testGetServerAddressList() throws IOException {
+        MongoDBSourceOrSink sourceOrSink = getInitializedSourceOrSink();
+
+        // Use replicaSet unchecked
+        List<ServerAddress> addressList = sourceOrSink.getServerAddressList(sourceOrSink.properties);
+        assertEquals(1, addressList.size());
+
+        // Use replicaSet checked
+        sourceOrSink.properties.useReplicaSet.setValue(true);
+        try {
+            addressList = sourceOrSink.getServerAddressList(sourceOrSink.properties);
+            fail("Expect get exception: \"java.io.IOException: The replicaSet table should not be empty\"");
+        } catch (IOException e) {
+        }
+        // Init replicaSet table
+        sourceOrSink.properties.replicaSetTable.host.setValue(Arrays.asList("localhost", null, "localhost"));
+        sourceOrSink.properties.replicaSetTable.port.setValue(Arrays.asList(27017, 27018, 27019));
+
+        addressList = sourceOrSink.getServerAddressList(sourceOrSink.properties);
+        assertEquals(3, addressList.size());
+
+        assertEquals("localhost", addressList.get(0).getHost());
+        // Default host 127.0.0.1
+        assertEquals("127.0.0.1", addressList.get(1).getHost());
+        assertEquals("localhost", addressList.get(2).getHost());
+
+        assertEquals(27017, addressList.get(0).getPort());
+        assertEquals(27018, addressList.get(1).getPort());
+        assertEquals(27019, addressList.get(2).getPort());
 
     }
 

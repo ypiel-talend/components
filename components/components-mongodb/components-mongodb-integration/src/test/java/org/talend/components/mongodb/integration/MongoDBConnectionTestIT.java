@@ -14,12 +14,14 @@ package org.talend.components.mongodb.integration;
 
 import static org.junit.Assert.assertEquals;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.talend.components.mongodb.MongoDBConnectionProperties;
 import org.talend.daikon.properties.ValidationResult;
 
+@Ignore
 public class MongoDBConnectionTestIT extends MongoDBTestBasic {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MongoDBConnectionTestIT.class);
