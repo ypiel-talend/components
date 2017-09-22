@@ -34,7 +34,7 @@ public class TMongoDBCloseDefinition extends MongoDBDefinition {
             ConnectorTopology connectorTopology) {
         assertEngineCompatibility(engine);
         assertConnectorTopologyCompatibility(connectorTopology);
-        return getCommonRuntimeInfo(SOURCE_OR_SINK_CLASS);
+        return getCommonRuntimeInfo(CLOSE_SOURCE_OR_SINK_CLASS);
     }
 
     @Override
