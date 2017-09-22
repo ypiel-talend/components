@@ -15,6 +15,7 @@ package org.talend.components.mongodb.runtime;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.talend.components.api.container.RuntimeContainer;
 import org.talend.components.mongodb.MongoDBConnectionProperties;
@@ -90,9 +91,14 @@ public abstract class MongoDBTestBasic {
     protected MongoDBSourceOrSink getInitializedSourceOrSink() {
         MongoDBSourceOrSink sourceOrSink = new MongoDBSourceOrSink();
         MongoDBConnectionProperties properties = createConnectionProperties();
+        properties.database.setValue(DEFAULT_DB);
         RuntimeContainer container = getRuntimeContainer(CONNECTION_COMP_ID, true);
         sourceOrSink.initialize(container, properties);
         return sourceOrSink;
+    }
+
+    public static String createRandom() {
+        return Integer.toString(ThreadLocalRandom.current().nextInt(1, 1000000));
     }
 
     public abstract void prepareTestData();

@@ -13,6 +13,7 @@
 
 package org.talend.components.mongodb.common;
 
+import static org.talend.components.mongodb.common.MongoDBConstants.DYNAMIC_PROPERTY_VALUE;
 import static org.talend.daikon.properties.property.PropertyFactory.newProperty;
 
 import java.util.List;
@@ -27,10 +28,10 @@ import org.talend.daikon.properties.property.Property;
  */
 public class FunctionParametersTable extends ComponentPropertiesImpl {
 
-    private static final TypeLiteral<List<String>> LIST_STRING_TYPE = new TypeLiteral<List<String>>() {// empty
+    private static final TypeLiteral<List<Object>> LIST_STRING_TYPE = new TypeLiteral<List<Object>>() {// empty
     };
 
-    public Property<List<String>> parameter = newProperty(LIST_STRING_TYPE, "parameter");
+    public Property<List<Object>> parameter = newProperty(LIST_STRING_TYPE, "parameter");
 
     public FunctionParametersTable(String name) {
         super(name);
@@ -41,6 +42,12 @@ public class FunctionParametersTable extends ComponentPropertiesImpl {
         super.setupLayout();
         Form mainForm = new Form(this, Form.MAIN);
         mainForm.addColumn(parameter);
+    }
+
+    @Override
+    public void setupProperties() {
+        super.setupProperties();
+        parameter.setTaggedValue(DYNAMIC_PROPERTY_VALUE, true);
     }
 
 }

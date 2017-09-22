@@ -23,7 +23,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.talend.components.api.component.AbstractComponentDefinition.NONE;
 import static org.talend.components.api.component.ComponentDefinition.RETURN_ERROR_MESSAGE_PROP;
-import static org.talend.components.mongodb.common.MongoDBDefinition.SINK_CLASS;
+import static org.talend.components.mongodb.common.MongoDBDefinition.ROW_SINK_CLASS;
+import static org.talend.components.mongodb.common.MongoDBDefinition.ROW_SINK_OR_CLASS;
 
 import java.util.Arrays;
 import java.util.List;
@@ -84,9 +85,9 @@ public class TMongoDBRowDefinitionTest extends MongoDBDefinitionTestBasic {
         TMongoDBRowDefinition definition = new TMongoDBRowDefinition();
         RuntimeInfo runtimeIn = definition.getRuntimeInfo(ExecutionEngine.DI, null, ConnectorTopology.INCOMING);
 
-        RuntimeInfo runtimeNone = definition.getRuntimeInfo(ExecutionEngine.DI, null, ConnectorTopology.INCOMING);
-        assertThat(runtimeIn.getRuntimeClassName(), equalTo(SINK_CLASS));
-        assertThat(runtimeNone.getRuntimeClassName(), equalTo(SINK_CLASS));
+        RuntimeInfo runtimeNone = definition.getRuntimeInfo(ExecutionEngine.DI, null, ConnectorTopology.NONE);
+        assertThat(runtimeIn.getRuntimeClassName(), equalTo(ROW_SINK_CLASS));
+        assertThat(runtimeNone.getRuntimeClassName(), equalTo(ROW_SINK_OR_CLASS));
     }
 
     @Test

@@ -46,6 +46,10 @@ public abstract class MongoDBDefinition extends AbstractComponentDefinition {
 
     public static final String SINK_CLASS = "org.talend.components.mongodb.runtime.MongoDBSink";
 
+    public static final String ROW_SINK_CLASS = "org.talend.components.mongodb.runtime.row.MongoDBRowSink";
+
+    public static final String ROW_SINK_OR_CLASS = "org.talend.components.mongodb.runtime.row.MongoDBRowSourceOrSink";
+
     /** Provides {@link SandboxedInstance}s. */
     private static SandboxedInstanceProvider sandboxedInstanceProvider = SandboxedInstanceProvider.INSTANCE;
 

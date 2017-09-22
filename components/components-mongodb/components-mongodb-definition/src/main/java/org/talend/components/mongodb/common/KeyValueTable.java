@@ -13,6 +13,7 @@
 
 package org.talend.components.mongodb.common;
 
+import static org.talend.components.mongodb.common.MongoDBConstants.DYNAMIC_PROPERTY_VALUE;
 import static org.talend.daikon.properties.property.PropertyFactory.newProperty;
 
 import java.util.List;
@@ -47,5 +48,12 @@ public class KeyValueTable extends ComponentPropertiesImpl {
         Form mainForm = new Form(this, Form.MAIN);
         mainForm.addColumn(key);
         mainForm.addColumn(value);
+    }
+
+    @Override
+    public void setupProperties() {
+        super.setupProperties();
+        key.setTaggedValue(DYNAMIC_PROPERTY_VALUE, true);
+        value.setTaggedValue(DYNAMIC_PROPERTY_VALUE, true);
     }
 }

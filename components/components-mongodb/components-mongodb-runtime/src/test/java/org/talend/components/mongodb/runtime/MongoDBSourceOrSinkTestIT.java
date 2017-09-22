@@ -97,7 +97,7 @@ public class MongoDBSourceOrSinkTestIT extends MongoDBTestBasic {
         assertEquals(ValidationResult.Result.ERROR, resultError.getStatus());
 
         // Specify the database name
-        sourceOrSink.properties.database.setValue(DEFAULT_DB);
+        sourceOrSink.properties.getConnectionProperties().getConnectionProperties().database.setValue(DEFAULT_DB);
         ValidationResult resultOK = sourceOrSink.validate(getRuntimeContainer(CONNECTION_COMP_ID, true));
         LOGGER.debug(resultOK.getMessage());
         assertEquals(ValidationResult.Result.OK, resultOK.getStatus());
@@ -108,8 +108,8 @@ public class MongoDBSourceOrSinkTestIT extends MongoDBTestBasic {
     @Test
     public void testValidateWrongPWD() throws Exception {
         MongoDBSourceOrSink sourceOrSink = getInitializedSourceOrSink();
-        sourceOrSink.properties.requiredAuthentication.setValue(true);
-        sourceOrSink.properties.userPassword.password.setValue("WRONG_PWD");
+        sourceOrSink.properties.getConnectionProperties().requiredAuthentication.setValue(true);
+        sourceOrSink.properties.getConnectionProperties().userPassword.password.setValue("WRONG_PWD");
         ValidationResult result = sourceOrSink.validate(null);
         LOGGER.debug(result.getMessage());
         assertEquals(ValidationResult.Result.ERROR, result.getStatus());
@@ -118,37 +118,38 @@ public class MongoDBSourceOrSinkTestIT extends MongoDBTestBasic {
     @Test
     public void testGetCredential() throws IOException {
         MongoDBSourceOrSink sourceOrSink = getInitializedSourceOrSink();
-        sourceOrSink.properties.requiredAuthentication.setValue(true);
-        List<MongoCredential> credentialList = sourceOrSink.getCredential(sourceOrSink.properties);
+        sourceOrSink.properties.getConnectionProperties().requiredAuthentication.setValue(true);
+        List<MongoCredential> credentialList = sourceOrSink.getCredential(sourceOrSink.properties.getConnectionProperties());
         assertEquals(1, credentialList.size());
         assertNull(credentialList.get(0).getMechanism());
 
-        sourceOrSink.properties.dbVersion.setValue(MongoDBConnectionProperties.DBVersion.MONGODB_2_5_X);
-        credentialList = sourceOrSink.getCredential(sourceOrSink.properties);
+        sourceOrSink.properties.getConnectionProperties().dbVersion.setValue(MongoDBConnectionProperties.DBVersion.MONGODB_2_5_X);
+        credentialList = sourceOrSink.getCredential(sourceOrSink.properties.getConnectionProperties());
         assertEquals(1, credentialList.size());
         assertEquals("MONGODB-CR", credentialList.get(0).getMechanism());
 
-        sourceOrSink.properties.authenticationMechanism.setValue(MongoDBConnectionProperties.AuthenticationMechanism.PLAIN_MEC);
-        credentialList = sourceOrSink.getCredential(sourceOrSink.properties);
+        sourceOrSink.properties.getConnectionProperties().authenticationMechanism
+                .setValue(MongoDBConnectionProperties.AuthenticationMechanism.PLAIN_MEC);
+        credentialList = sourceOrSink.getCredential(sourceOrSink.properties.getConnectionProperties());
         assertEquals(1, credentialList.size());
         assertEquals("PLAIN", credentialList.get(0).getMechanism());
 
-        sourceOrSink.properties.authenticationMechanism
+        sourceOrSink.properties.getConnectionProperties().authenticationMechanism
                 .setValue(MongoDBConnectionProperties.AuthenticationMechanism.KERBEROS_MEC);
-        credentialList = sourceOrSink.getCredential(sourceOrSink.properties);
+        credentialList = sourceOrSink.getCredential(sourceOrSink.properties.getConnectionProperties());
         assertEquals(1, credentialList.size());
         assertEquals("GSSAPI", credentialList.get(0).getMechanism());
 
-        sourceOrSink.properties.authenticationMechanism
+        sourceOrSink.properties.getConnectionProperties().authenticationMechanism
                 .setValue(MongoDBConnectionProperties.AuthenticationMechanism.SCRAMSHA1_MEC);
-        credentialList = sourceOrSink.getCredential(sourceOrSink.properties);
+        credentialList = sourceOrSink.getCredential(sourceOrSink.properties.getConnectionProperties());
         assertEquals(1, credentialList.size());
         assertEquals("SCRAM-SHA-1", credentialList.get(0).getMechanism());
 
-        sourceOrSink.properties.userPassword.password.setValue(null);
+        sourceOrSink.properties.getConnectionProperties().userPassword.password.setValue(null);
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Username or password missing");
-        credentialList = sourceOrSink.getCredential(sourceOrSink.properties);
+        credentialList = sourceOrSink.getCredential(sourceOrSink.properties.getConnectionProperties());
     }
 
     @Ignore
@@ -196,21 +197,22 @@ public class MongoDBSourceOrSinkTestIT extends MongoDBTestBasic {
         MongoDBSourceOrSink sourceOrSink = getInitializedSourceOrSink();
 
         // Use replicaSet unchecked
-        List<ServerAddress> addressList = sourceOrSink.getServerAddressList(sourceOrSink.properties);
+        List<ServerAddress> addressList = sourceOrSink.getServerAddressList(sourceOrSink.properties.getConnectionProperties());
         assertEquals(1, addressList.size());
 
         // Use replicaSet checked
-        sourceOrSink.properties.useReplicaSet.setValue(true);
+        sourceOrSink.properties.getConnectionProperties().useReplicaSet.setValue(true);
         try {
-            addressList = sourceOrSink.getServerAddressList(sourceOrSink.properties);
+            addressList = sourceOrSink.getServerAddressList(sourceOrSink.properties.getConnectionProperties());
             fail("Expect get exception: \"java.io.IOException: The replicaSet table should not be empty\"");
         } catch (IOException e) {
         }
         // Init replicaSet table
-        sourceOrSink.properties.replicaSetTable.host.setValue(Arrays.asList("localhost", null, "localhost"));
-        sourceOrSink.properties.replicaSetTable.port.setValue(Arrays.asList(27017, 27018, 27019));
+        sourceOrSink.properties.getConnectionProperties().replicaSetTable.host
+                .setValue(Arrays.asList("localhost", null, "localhost"));
+        sourceOrSink.properties.getConnectionProperties().replicaSetTable.port.setValue(Arrays.asList(27017, 27018, 27019));
 
-        addressList = sourceOrSink.getServerAddressList(sourceOrSink.properties);
+        addressList = sourceOrSink.getServerAddressList(sourceOrSink.properties.getConnectionProperties());
         assertEquals(3, addressList.size());
 
         assertEquals("localhost", addressList.get(0).getHost());

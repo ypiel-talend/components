@@ -42,7 +42,7 @@ import org.talend.daikon.properties.property.PropertyFactory;
 import org.talend.daikon.properties.service.Repository;
 import org.talend.daikon.sandbox.SandboxedInstance;
 
-public class MongoDBConnectionProperties extends ComponentPropertiesImpl {
+public class MongoDBConnectionProperties extends ComponentPropertiesImpl implements MongoDBProvideConnectionProperties {
 
     protected static final I18nMessages MESSAGES = GlobalI18N.getI18nMessageProvider()
             .getI18nMessages(MongoDBConnectionProperties.class);
@@ -296,4 +296,10 @@ public class MongoDBConnectionProperties extends ComponentPropertiesImpl {
         repositoryLocation = location;
         return this;
     }
+
+    @Override
+    public MongoDBConnectionProperties getConnectionProperties() {
+        return this;
+    }
+
 }

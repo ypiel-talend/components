@@ -55,8 +55,10 @@ public class TMongoDBRowDefinition extends MongoDBDefinition {
         assertEngineCompatibility(engine);
         assertConnectorTopologyCompatibility(connectorTopology);
         // TODO recheck when work on runtime part
-        if (connectorTopology == ConnectorTopology.INCOMING || connectorTopology == ConnectorTopology.NONE) {
-            return getCommonRuntimeInfo(SINK_CLASS);
+        if (connectorTopology == ConnectorTopology.INCOMING) {
+            return getCommonRuntimeInfo(ROW_SINK_CLASS);
+        } else if (connectorTopology == ConnectorTopology.NONE) {
+            return getCommonRuntimeInfo(ROW_SINK_OR_CLASS);
         } else {
             return null;
         }

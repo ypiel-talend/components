@@ -36,7 +36,7 @@ public class MongoDBCloseSourceOrSinkTest extends MongoDBTestBasic {
     public void prepareTestData() {
         MongoDBSourceOrSink sourceOrSink = getInitializedSourceOrSink();
         // Specify the database name
-        sourceOrSink.properties.database.setValue(DEFAULT_DB);
+        sourceOrSink.properties.getConnectionProperties().database.setValue(DEFAULT_DB);
         ValidationResult resultOK = sourceOrSink.validate(getRuntimeContainer(CONNECTION_COMP_ID, false));
         LOGGER.debug(resultOK.getMessage());
         assertEquals(ValidationResult.Result.OK, resultOK.getStatus());

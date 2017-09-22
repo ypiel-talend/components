@@ -1,7 +1,5 @@
 package org.talend.components.mongodb.runtime;
 
-import static org.talend.components.common.ComponentConstants.KEY_CONNECTION;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.talend.components.api.container.RuntimeContainer;
 import org.talend.components.api.properties.ComponentProperties;
 import org.talend.components.mongodb.MongoDBConnectionProperties;
+import org.talend.components.mongodb.MongoDBProvideConnectionProperties;
 import org.talend.components.mongodb.MongoDBRuntimeSourceOrSink;
 import org.talend.components.mongodb.avro.MongoDBSchemaInferrer;
 import org.talend.daikon.NamedThing;
@@ -51,41 +50,44 @@ public class MongoDBSourceOrSink implements MongoDBRuntimeSourceOrSink {
 
     private static final String DB_COLLECTION_MARK = "$";
 
-    protected MongoDBConnectionProperties properties;
+    public MongoDBProvideConnectionProperties properties;
 
-    protected Mongo connect(RuntimeContainer container) throws Exception {
+    @Override
+    public ValidationResult initialize(RuntimeContainer container, ComponentProperties properties) {
+        this.properties = (MongoDBProvideConnectionProperties) properties;
+        return ValidationResult.OK;
+    }
 
+    protected Mongo connect(RuntimeContainer container) throws IOException {
+
+        MongoDBConnectionProperties props = properties.getConnectionProperties();
         Mongo mongo = null;
 
-        String refComponentId = properties.getReferencedComponentId();
+        String refComponentId = props.getReferencedComponentId();
         // Using another component's connection
         if (refComponentId != null) {
             // In a runtime container
             if (container != null) {
-                mongo = (Mongo) container.getComponentData(refComponentId, KEY_CONNECTION);
+                mongo = (Mongo) container.getComponentData(refComponentId, KEY_MONGO);
                 if (mongo != null) {
                     return mongo;
                 }
                 throw new IOException(MESSAGES.getMessage("error.refComponentNotConnected", refComponentId));
             }
             // Design time
-            properties = properties.getReferencedConnectionProperties();
-            // FIXME This should not happen - but does as of now
-            if (properties == null) {
-                throw new IOException(MESSAGES.getMessage("error.refComponentWithoutProperties", refComponentId));
-            }
+            props = props.getReferencedConnectionProperties();
         }
 
         MongoClientOptions clientOptions = null;
-        if (properties.useSSL.getValue()) {
+        if (props.useSSL.getValue()) {
             clientOptions = new MongoClientOptions.Builder().socketFactory(SSLSocketFactory.getDefault()).build();
         } else {
             clientOptions = new MongoClientOptions.Builder().build();
         }
-        List<MongoCredential> mongoCredentialList = getCredential(properties);
+        List<MongoCredential> mongoCredentialList = getCredential(props);
 
-        List<ServerAddress> serverAddressList = getServerAddressList(properties);
-        if (properties.useReplicaSet.getValue()) {
+        List<ServerAddress> serverAddressList = getServerAddressList(props);
+        if (props.useReplicaSet.getValue()) {
             if (serverAddressList.size() < 1) {
                 throw new IOException(MESSAGES.getMessage("error.replicaSet.setting"));
             }
@@ -94,20 +96,21 @@ public class MongoDBSourceOrSink implements MongoDBRuntimeSourceOrSink {
             mongo = new MongoClient(serverAddressList.get(0), mongoCredentialList, clientOptions);
         }
 
+        LOGGER.info("Connecting to {}", mongo.getServerAddressList());
         // Check the connection
         mongo.getAddress();
 
         if (container != null) {
             container.setComponentData(container.getCurrentComponentId(), KEY_MONGO, mongo);
-            if (!StringUtils.isEmpty(properties.database.getValue())) {
-                DB db = mongo.getDB(properties.database.getValue());
+            if (!StringUtils.isEmpty(props.database.getValue())) {
+                DB db = mongo.getDB(props.database.getValue());
                 container.setComponentData(container.getCurrentComponentId(), KEY_DB, db);
             } else {
                 throw new IOException(MESSAGES.getMessage("error.db.missing"));
             }
         } else {
             // Check whether have right to list databases when database is not specified
-            if (StringUtils.isEmpty(properties.database.getValue())) {
+            if (StringUtils.isEmpty(props.database.getValue())) {
                 mongo.getDatabaseNames();
             }
         }
@@ -264,12 +267,6 @@ public class MongoDBSourceOrSink implements MongoDBRuntimeSourceOrSink {
         return vr;
     }
 
-    @Override
-    public ValidationResult initialize(RuntimeContainer container, ComponentProperties properties) {
-        this.properties = (MongoDBConnectionProperties) properties;
-        return ValidationResult.OK;
-    }
-
     /**
      * Get the database instance based on setting of database of connection properties
      * 
@@ -289,7 +286,7 @@ public class MongoDBSourceOrSink implements MongoDBRuntimeSourceOrSink {
                 throw new IOException(MESSAGES.getMessage("error.db.unshared", container.getCurrentComponentId()));
             }
         } else {
-            db = mongo.getDB(properties.database.getValue());
+            db = mongo.getDB(properties.getConnectionProperties().database.getValue());
         }
         return db;
     }
@@ -316,23 +313,26 @@ public class MongoDBSourceOrSink implements MongoDBRuntimeSourceOrSink {
                 if (userId == null || password == null) {
                     throw new IllegalArgumentException(MESSAGES.getMessage("error.usernamepwd.missing"));
                 }
+                String authDBName = null;
+                if (properties.setAuthenticationDatabase.getValue()) {
+                    authDBName = properties.authenticationDatabase.getName();
+                } else {
+                    authDBName = properties.database.getValue();
+                }
                 if ((MongoDBConnectionProperties.AuthenticationMechanism.NEGOTIATE_MEC
                         .equals(properties.authenticationMechanism.getValue()))) {
                     if (MongoDBConnectionProperties.DBVersion.MONGODB_3_0_X.equals(properties.dbVersion.getValue())
                             || MongoDBConnectionProperties.DBVersion.MONGODB_3_2_X.equals(properties.dbVersion.getValue())) {
-                        mongoCredential = MongoCredential.createCredential(userId, properties.authenticationDatabase.getValue(),
-                                password.toCharArray());
+                        mongoCredential = MongoCredential.createCredential(userId, authDBName, password.toCharArray());
                     } else {
-                        mongoCredential = MongoCredential.createMongoCRCredential(userId,
-                                properties.authenticationDatabase.getValue(), password.toCharArray());
+                        mongoCredential = MongoCredential.createMongoCRCredential(userId, authDBName, password.toCharArray());
                     }
                 } else if (MongoDBConnectionProperties.AuthenticationMechanism.PLAIN_MEC
                         .equals(properties.authenticationMechanism.getValue())) {
                     mongoCredential = MongoCredential.createPlainCredential(userId, "$external", password.toCharArray());
                 } else if (MongoDBConnectionProperties.AuthenticationMechanism.SCRAMSHA1_MEC
                         .equals(properties.authenticationMechanism.getValue())) {
-                    mongoCredential = MongoCredential.createScramSha1Credential(userId,
-                            properties.authenticationDatabase.getValue(), password.toCharArray());
+                    mongoCredential = MongoCredential.createScramSha1Credential(userId, authDBName, password.toCharArray());
                 }
             } else {
                 // TODO need to recheck whether we can do like this in new framework.
@@ -358,7 +358,7 @@ public class MongoDBSourceOrSink implements MongoDBRuntimeSourceOrSink {
                     serverAddressList.add(new ServerAddress(((List<String>) replicatSetHosts).get(i),
                             ((List<Integer>) replicatSetPorts).get(i)));
                 }
-            }else{
+            } else {
                 throw new IOException(MESSAGES.getMessage("error.replicaSet.setting"));
             }
         } else {

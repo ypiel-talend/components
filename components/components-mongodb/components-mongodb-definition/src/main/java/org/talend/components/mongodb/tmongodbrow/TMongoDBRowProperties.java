@@ -13,6 +13,7 @@
 
 package org.talend.components.mongodb.tmongodbrow;
 
+import static org.talend.components.mongodb.common.MongoDBConstants.DYNAMIC_PROPERTY_VALUE;
 import static org.talend.daikon.properties.presentation.Widget.widget;
 import static org.talend.daikon.properties.property.PropertyFactory.newBoolean;
 import static org.talend.daikon.properties.property.PropertyFactory.newProperty;
@@ -67,6 +68,8 @@ public class TMongoDBRowProperties extends FixedConnectorsComponentProperties im
         super.setupProperties();
         jsonCommand.setValue(
                 "{createIndexes: 'restaurants', indexes : [{key : {restaurant_id: 1}, name: 'id_index_2', unique: true}]}");
+        jsonCommand.setTaggedValue(DYNAMIC_PROPERTY_VALUE, true);
+        function.setTaggedValue(DYNAMIC_PROPERTY_VALUE, true);
     }
 
     @Override
