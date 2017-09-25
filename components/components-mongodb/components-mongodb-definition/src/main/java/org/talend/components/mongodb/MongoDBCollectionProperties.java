@@ -97,6 +97,7 @@ public class MongoDBCollectionProperties extends ComponentPropertiesImpl {
             } catch (Exception ex) {
                 vr.setMessage(ex.getMessage());
                 vr.setStatus(ValidationResult.Result.ERROR);
+                return vr;
             }
             return ValidationResult.OK;
         }
@@ -114,6 +115,7 @@ public class MongoDBCollectionProperties extends ComponentPropertiesImpl {
             } catch (Exception ex) {
                 vr.setMessage(ex.getMessage());
                 vr.setStatus(ValidationResult.Result.ERROR);
+                return vr;
             }
             return ValidationResult.OK;
         }

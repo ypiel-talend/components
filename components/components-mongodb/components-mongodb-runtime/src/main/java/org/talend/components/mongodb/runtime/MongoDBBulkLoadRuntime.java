@@ -29,10 +29,12 @@ public class MongoDBBulkLoadRuntime
     private static final long serialVersionUID = 829731606958765194L;
     
     RuntimeContainer runtimeContainer;
+    
+    String componentId;
 
     String errorMessage = "";
 
-    Long NB_LINE = 0l;
+    Long NB_LINE = 0L;
 
     TMongoDBBulkLoadProperties bulkProperties;
 
@@ -45,6 +47,7 @@ public class MongoDBBulkLoadRuntime
     public ValidationResult initialize(RuntimeContainer runtimeContainer, ComponentProperties properties) {
         this.bulkProperties = (TMongoDBBulkLoadProperties) properties;
         this.runtimeContainer = runtimeContainer;
+        componentId = runtimeContainer.getCurrentComponentId();
         ValidationResultMutable vr = new ValidationResultMutable();
         vr.setStatus(ValidationResult.Result.ERROR);
         if (MongoDBRuntimeHelper.isVacant(bulkProperties.mongoDBHome.getValue())) {
@@ -80,7 +83,6 @@ public class MongoDBBulkLoadRuntime
     protected String[] prepareCommend() {
         List<String> args = new ArrayList<String>();
         args.add(bulkProperties.mongoDBHome.getValue() + "/bin/mongoimport");
-        ProcessBuilder runtime = new ProcessBuilder(args);
 
         if (bulkProperties.useLocalDBPath.getValue()) {
             args.add("--dbpath");
@@ -98,7 +100,7 @@ public class MongoDBBulkLoadRuntime
                     repHosts.append(bulkProperties.replicateName.getValue() + "/");
                 }
                 List<String> hosts = bulkProperties.connection.replicaSetTable.host.getValue();
-                if (hosts != null && hosts.size() > 0) {
+                if (hosts != null && !hosts.isEmpty()) {
                     List<Integer> values = bulkProperties.connection.replicaSetTable.port.getValue();
                     for (int i = 0; i < hosts.size(); i++) {
                         if (!MongoDBRuntimeHelper.isVacant(hosts.get(i))) {
@@ -195,7 +197,7 @@ public class MongoDBBulkLoadRuntime
         if (bulkProperties.dataAction.getValue().equals(DataAction.UPSERT)) {
             List<String> upsertFieldList = bulkProperties.upsertField.columnName.getValue();
             StringBuilder upsertFields = new StringBuilder();
-            if (upsertFieldList != null && upsertFieldList.size() > 0) {
+            if (upsertFieldList != null && !upsertFieldList.isEmpty()) {
                 for (String field : upsertFieldList) {
                     upsertFields.append(field).append(',');
                 }
@@ -227,7 +229,7 @@ public class MongoDBBulkLoadRuntime
         }
 
         List<String> argument = bulkProperties.additionalArgs.argument.getValue();
-        if (argument != null && argument.size() > 0) {
+        if (argument != null && !argument.isEmpty()) {
             List<Object> values = bulkProperties.additionalArgs.value.getValue();
             for (int i = 0; i < argument.size(); i++) {
                 if (!MongoDBRuntimeHelper.isVacant(argument.get(i))) {
@@ -244,7 +246,6 @@ public class MongoDBBulkLoadRuntime
         for (String s : args) {
             sb.append(s + " ");
         }
-        String componentId = runtimeContainer.getCurrentComponentId();
         LOGGER.info(" Execute command " + sb.toString() + ".");
         if (bulkProperties.connection.useReplicaSet.getValue()) {
             LOGGER.info(componentId + " - Start to import the data");
@@ -277,9 +278,9 @@ public class MongoDBBulkLoadRuntime
         runtime.redirectErrorStream(true);
 
         final Process process = runtime.start();
-
+        
         Thread normal = new Thread() {
-
+            @Override
             public void run() {
                 try {
                     java.io.BufferedReader reader = new java.io.BufferedReader(
@@ -287,9 +288,10 @@ public class MongoDBBulkLoadRuntime
                     String line = "";
                     try {
                         while ((line = reader.readLine()) != null) {
-
-                            System.out.println(line);
-
+                            if(bulkProperties.printLog.getValue()){
+                                System.out.println(line);
+                            }
+                            
                             int im = line.indexOf("imported");
                             int obj = line.indexOf("object");
                             int doc = line.indexOf("document");
@@ -307,6 +309,7 @@ public class MongoDBBulkLoadRuntime
                     }
                 } catch (java.io.IOException ioe) {
                     ioe.printStackTrace();
+                    LOGGER.error(componentId + " - " + ioe.getLocalizedMessage());
                 }
             }
         };
@@ -323,7 +326,7 @@ public class MongoDBBulkLoadRuntime
 
     protected void printLog(final Process process) {
         Thread error = new Thread() {
-
+            @Override
             public void run() {
                 try {
                     java.io.BufferedReader reader = new java.io.BufferedReader(
@@ -341,6 +344,7 @@ public class MongoDBBulkLoadRuntime
                     }
                 } catch (java.io.IOException ioe) {
                     ioe.printStackTrace();
+                    LOGGER.error(componentId + " - " + ioe.getLocalizedMessage());
                 }
             }
         };

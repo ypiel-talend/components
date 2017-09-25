@@ -1,25 +1,21 @@
 package org.talend.components.mongodb.runtime;
 
-import static org.junit.Assert.*;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.talend.components.api.container.RuntimeContainer;
 import org.talend.components.mongodb.RuntimeContainerMock;
 import org.talend.components.mongodb.MongoDBConnectionProperties.AuthenticationMechanism;
 import org.talend.components.mongodb.tmongodbbulkload.TMongoDBBulkLoadProperties;
+import org.talend.components.mongodb.tmongodbbulkload.TMongoDBBulkLoadProperties.DataAction;
 import org.talend.components.mongodb.tmongodbbulkload.TMongoDBBulkLoadProperties.FileType;
 import org.talend.daikon.avro.AvroUtils;
 import org.talend.daikon.avro.SchemaConstants;
@@ -131,17 +127,16 @@ public class MongoDBBulkLoadRuntimeTest {
         Assert.assertEquals(21, result1.length);
 
         bulkLoadProperties.connection.authenticationMechanism.setValue(AuthenticationMechanism.SCRAMSHA1_MEC);
+        bulkLoadProperties.dataAction.setValue(DataAction.UPSERT);
+        bulkLoadProperties.upsertField.columnName.setValue(Arrays.asList(new String[]{"_id","name"}));
         bulkLoadProperties.fileType.setValue(FileType.json);
         bulkLoadProperties.additionalArgs.argument.setValue(Arrays.asList(new String[]{"--dog","--cat"}));
         bulkLoadProperties.additionalArgs.value.setValue(Arrays.asList(new Object[]{"bark","miaow"}));
+        bulkLoadProperties.useLocalDBPath.setValue(true);
         
         result1 = bulkLoadRuntime.prepareCommend();
-//        System.out.println("-------------------------");
-//        for (String str : result1) {
-//            System.out.println(str);
-//        }
-        Assert.assertEquals("--dog", result1[17]);
-        Assert.assertEquals(21, result1.length);
+        Assert.assertEquals("--upsert", result1[17]);
+        Assert.assertEquals(24, result1.length);
 
 
     }
@@ -162,9 +157,7 @@ public class MongoDBBulkLoadRuntimeTest {
 
     @Test
     public void testThreadRun() throws IOException, InterruptedException {
-        
         bulkLoadRuntime.initialize(runtimeContainer, bulkLoadProperties);
-        String[] args =bulkLoadRuntime.prepareCommend();
         int status = bulkLoadRuntime.ThreadRun(new String[]{"java","-version"});
         Assert.assertEquals(0, status);
     }
