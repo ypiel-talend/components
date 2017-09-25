@@ -307,6 +307,8 @@ public class MongoDBSourceOrSink implements MongoDBRuntimeSourceOrSink {
                     || (MongoDBConnectionProperties.AuthenticationMechanism.PLAIN_MEC
                             .equals(properties.authenticationMechanism.getValue()))
                     || (MongoDBConnectionProperties.AuthenticationMechanism.SCRAMSHA1_MEC
+                            .equals(properties.authenticationMechanism.getValue()))
+                    || (MongoDBConnectionProperties.AuthenticationMechanism.MONGODBCR_MEC
                             .equals(properties.authenticationMechanism.getValue()))) {
                 String userId = properties.userPassword.userId.getValue();
                 String password = properties.userPassword.password.getValue();
@@ -315,7 +317,7 @@ public class MongoDBSourceOrSink implements MongoDBRuntimeSourceOrSink {
                 }
                 String authDBName = null;
                 if (properties.setAuthenticationDatabase.getValue()) {
-                    authDBName = properties.authenticationDatabase.getName();
+                    authDBName = properties.authenticationDatabase.getValue();
                 } else {
                     authDBName = properties.database.getValue();
                 }
@@ -333,6 +335,9 @@ public class MongoDBSourceOrSink implements MongoDBRuntimeSourceOrSink {
                 } else if (MongoDBConnectionProperties.AuthenticationMechanism.SCRAMSHA1_MEC
                         .equals(properties.authenticationMechanism.getValue())) {
                     mongoCredential = MongoCredential.createScramSha1Credential(userId, authDBName, password.toCharArray());
+                } else if (MongoDBConnectionProperties.AuthenticationMechanism.MONGODBCR_MEC
+                        .equals(properties.authenticationMechanism.getValue())) {
+                    mongoCredential = MongoCredential.createMongoCRCredential(userId, authDBName, password.toCharArray());
                 }
             } else {
                 // TODO need to recheck whether we can do like this in new framework.
