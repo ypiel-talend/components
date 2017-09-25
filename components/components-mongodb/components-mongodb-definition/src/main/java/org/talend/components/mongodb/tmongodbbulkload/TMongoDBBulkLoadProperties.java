@@ -89,11 +89,7 @@ public class TMongoDBBulkLoadProperties extends ComponentPropertiesImpl implemen
     public void setupProperties() {
         super.setupProperties();
         connection.dbVersion.setValue(MongoDBConnectionProperties.DBVersion.MONGODB_3_2_X);
-        connection.authenticationMechanism.setPossibleValues( //
-                MongoDBConnectionProperties.AuthenticationMechanism.MONGODBCR_MEC, //
-                MongoDBConnectionProperties.AuthenticationMechanism.PLAIN_MEC, //
-                MongoDBConnectionProperties.AuthenticationMechanism.SCRAMSHA1_MEC, //
-                MongoDBConnectionProperties.AuthenticationMechanism.KERBEROS_MEC);
+        connection.authenticationMechanism.setValue(MongoDBConnectionProperties.AuthenticationMechanism.MONGODBCR_MEC);
         connection.kerberos.userPrincipal.setValue("mongouser@EXAMPLE.COM");
         connection.kerberos.realm.setValue("mongodb");
         connection.kerberos.kdcServer.setValue("talend-mongo");
@@ -142,6 +138,14 @@ public class TMongoDBBulkLoadProperties extends ComponentPropertiesImpl implemen
 
         if (form.getName().equals(Form.MAIN)) {
             connection.dbVersion.setValue(MongoDBConnectionProperties.DBVersion.MONGODB_3_2_X);
+            connection.authenticationMechanism.setPossibleValues( //
+                    MongoDBConnectionProperties.AuthenticationMechanism.MONGODBCR_MEC, //
+                    MongoDBConnectionProperties.AuthenticationMechanism.PLAIN_MEC, //
+                    MongoDBConnectionProperties.AuthenticationMechanism.SCRAMSHA1_MEC, //
+                    MongoDBConnectionProperties.AuthenticationMechanism.KERBEROS_MEC);
+            if (!connection.authenticationMechanism.getPossibleValues().contains(connection.authenticationMechanism.getValue())) {
+                connection.authenticationMechanism.setValue(MongoDBConnectionProperties.AuthenticationMechanism.MONGODBCR_MEC);
+            }
             form.getWidget(localDBPath).setVisible(useLocalDBPath.getValue());
             boolean useLocalDB = useLocalDBPath.getValue();
             boolean useReplica = connection.useReplicaSet.getValue();

@@ -86,6 +86,8 @@ public class TMongoDBBulkLoadPropertiesTest extends MongoDBTestBase {
                 MongoDBConnectionProperties.AuthenticationMechanism.SCRAMSHA1_MEC, //
                 MongoDBConnectionProperties.AuthenticationMechanism.KERBEROS_MEC);
         assertTrue(properties.connection.authenticationMechanism.getPossibleValues().containsAll(allAuthTypes));
+        assertEquals(MongoDBConnectionProperties.AuthenticationMechanism.MONGODBCR_MEC,
+                properties.connection.authenticationMechanism.getValue());
 
     }
 
@@ -148,9 +150,12 @@ public class TMongoDBBulkLoadPropertiesTest extends MongoDBTestBase {
         assertTrue(mainForm.getWidget(properties.ignoreBlanks).isVisible());
         assertTrue(mainForm.getWidget(properties.jsonArray).isHidden());
 
+        // RequiredAuthentication
         properties.connection.requiredAuthentication.setValue(true);
         componentService.afterProperty(properties.connection.requiredAuthentication.getName(), properties.connection);
         properties.refreshLayout(mainForm);
+        assertEquals(MongoDBConnectionProperties.AuthenticationMechanism.MONGODBCR_MEC,
+                properties.connection.authenticationMechanism.getValue());
         properties.connection.authenticationMechanism.setValue(MongoDBConnectionProperties.AuthenticationMechanism.KERBEROS_MEC);
         componentService.afterProperty(properties.connection.authenticationMechanism.getName(), properties.connection);
         properties.refreshLayout(mainForm);
