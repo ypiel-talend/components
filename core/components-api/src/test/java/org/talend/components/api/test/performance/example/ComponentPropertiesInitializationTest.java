@@ -52,7 +52,6 @@ public class ComponentPropertiesInitializationTest {
      */
     @Test
     @PerfTest(invocations = 5, threads = 1)
-    @Required(max = 300, average = 150)
     public void testShowResults() throws InterruptedException {
         Thread.sleep(150);
     }
