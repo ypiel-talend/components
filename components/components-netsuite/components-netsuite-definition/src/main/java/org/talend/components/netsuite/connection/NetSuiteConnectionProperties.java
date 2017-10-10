@@ -79,6 +79,11 @@ public class NetSuiteConnectionProperties extends ComponentPropertiesImpl implem
     public final Property<String> applicationId = newString("applicationId");
 
     /**
+     * Re-write me!
+     */
+    public final Property<Boolean> bodyFieldsOnly = newBoolean("bodyFieldsOnly");
+
+    /**
      * Specifies whether NetSuite customizations are enabled.
      * If customizations are enabled then NetSuite runtime retrieves custom record types and
      * custom fields which are exposed for components.
@@ -111,6 +116,7 @@ public class NetSuiteConnectionProperties extends ComponentPropertiesImpl implem
         role.setValue(3);
         account.setValue("");
         applicationId.setValue("");
+        bodyFieldsOnly.setValue(true);
         customizationEnabled.setValue(true);
     }
 
@@ -128,6 +134,7 @@ public class NetSuiteConnectionProperties extends ComponentPropertiesImpl implem
         mainForm.addRow(applicationId);
 
         Form advForm = new Form(this, Form.ADVANCED);
+        advForm.addRow(bodyFieldsOnly);
         advForm.addRow(customizationEnabled);
 
         // A form for a reference to a connection
@@ -167,6 +174,7 @@ public class NetSuiteConnectionProperties extends ComponentPropertiesImpl implem
             form.getWidget(applicationId.getName()).setHidden(refConnectionUsed);
 
         } else if (form.getName().equals(Form.ADVANCED)) {
+            form.getWidget(bodyFieldsOnly.getName()).setHidden(refConnectionUsed);
             form.getWidget(customizationEnabled.getName()).setHidden(refConnectionUsed);
         }
     }

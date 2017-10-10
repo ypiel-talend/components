@@ -123,6 +123,7 @@ public class NetSuiteEndpoint {
         Integer roleId = connProps.role.getValue();
         String account = connProps.account.getStringValue();
         String applicationId = connProps.applicationId.getStringValue();
+        Boolean bodyFieldsOnly = connProps.bodyFieldsOnly.getValue();
         Boolean customizationEnabled = connProps.customizationEnabled.getValue();
 
         NetSuiteCredentials credentials = new NetSuiteCredentials();
@@ -135,6 +136,7 @@ public class NetSuiteEndpoint {
         try {
             ConnectionConfig connectionConfig = new ConnectionConfig(
                     new URL(endpointUrl), apiVersion.getMajor(), credentials);
+            connectionConfig.setBodyFieldsOnly(bodyFieldsOnly);
             connectionConfig.setCustomizationEnabled(customizationEnabled);
             return connectionConfig;
         } catch (MalformedURLException e) {
@@ -188,7 +190,7 @@ public class NetSuiteEndpoint {
         NetSuiteClientService<?> clientService = clientFactory.createClient();
         clientService.setEndpointUrl(connectionConfig.getEndpointUrl().toString());
         clientService.setCredentials(connectionConfig.getCredentials());
-
+        clientService.setBodyFieldsOnly(connectionConfig.isBodyFieldsOnly());
         MetaDataSource metaDataSource = clientService.getMetaDataSource();
         metaDataSource.setCustomizationEnabled(connectionConfig.isCustomizationEnabled());
 
@@ -204,6 +206,7 @@ public class NetSuiteEndpoint {
         private URL endpointUrl;
         private NetSuiteVersion apiVersion;
         private NetSuiteCredentials credentials;
+        private boolean bodyFieldsOnly;
         private boolean customizationEnabled;
 
         public ConnectionConfig() {
@@ -239,6 +242,14 @@ public class NetSuiteEndpoint {
             this.credentials = credentials;
         }
 
+        public boolean isBodyFieldsOnly() {
+            return bodyFieldsOnly;
+        }
+
+        public void setBodyFieldsOnly(boolean bodyFieldsOnly) {
+            this.bodyFieldsOnly = bodyFieldsOnly;
+        }
+
         public boolean isCustomizationEnabled() {
             return customizationEnabled;
         }
@@ -249,13 +260,16 @@ public class NetSuiteEndpoint {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o)
+            if (this == o) {
                 return true;
-            if (o == null || getClass() != o.getClass())
+            }
+            if (o == null || getClass() != o.getClass()) {
                 return false;
+            }
             ConnectionConfig that = (ConnectionConfig) o;
-            return customizationEnabled == that.customizationEnabled && Objects.equals(endpointUrl, that.endpointUrl) &&
-                    Objects.equals(apiVersion, that.apiVersion) && Objects.equals(credentials, that.credentials);
+            return bodyFieldsOnly == that.bodyFieldsOnly && customizationEnabled == that.customizationEnabled
+                    && Objects.equals(endpointUrl, that.endpointUrl) && Objects.equals(apiVersion, that.apiVersion)
+                    && Objects.equals(credentials, that.credentials);
         }
 
         @Override
@@ -269,6 +283,7 @@ public class NetSuiteEndpoint {
             sb.append("endpointUrl=").append(endpointUrl);
             sb.append("apiVersion=").append(apiVersion);
             sb.append(", credentials=").append(credentials);
+            sb.append(", bodyFieldsOnly=").append(bodyFieldsOnly);
             sb.append(", customizationEnabled=").append(customizationEnabled);
             sb.append('}');
             return sb.toString();
