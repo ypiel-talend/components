@@ -24,6 +24,7 @@ import org.talend.components.netsuite.client.NetSuiteClientService;
 import org.talend.components.netsuite.client.NetSuiteCredentials;
 import org.talend.components.netsuite.client.NetSuiteException;
 import org.talend.components.netsuite.connection.NetSuiteConnectionProperties;
+import org.talend.components.netsuite.input.NetSuiteInputProperties;
 
 /**
  * Represents NetSuite Web Service endpoint.
@@ -58,9 +59,9 @@ public class NetSuiteEndpoint {
      * @throws NetSuiteException if connection configuration not valid
      */
     public static ConnectionConfig createConnectionConfig(
-            NetSuiteConnectionProperties properties) throws NetSuiteException {
+            NetSuiteProvideConnectionProperties properties) throws NetSuiteException {
 
-        NetSuiteConnectionProperties connProps = properties.getEffectiveConnectionProperties();
+        NetSuiteConnectionProperties connProps = properties.getConnectionProperties();
 
         if (StringUtils.isEmpty(connProps.endpoint.getStringValue())) {
             throw new NetSuiteException(new NetSuiteErrorCode(NetSuiteErrorCode.CLIENT_ERROR),
@@ -123,7 +124,6 @@ public class NetSuiteEndpoint {
         Integer roleId = connProps.role.getValue();
         String account = connProps.account.getStringValue();
         String applicationId = connProps.applicationId.getStringValue();
-        Boolean bodyFieldsOnly = connProps.bodyFieldsOnly.getValue();
         Boolean customizationEnabled = connProps.customizationEnabled.getValue();
 
         NetSuiteCredentials credentials = new NetSuiteCredentials();
@@ -136,7 +136,9 @@ public class NetSuiteEndpoint {
         try {
             ConnectionConfig connectionConfig = new ConnectionConfig(
                     new URL(endpointUrl), apiVersion.getMajor(), credentials);
-            connectionConfig.setBodyFieldsOnly(bodyFieldsOnly);
+            if (properties instanceof NetSuiteInputProperties) {
+                connectionConfig.setBodyFieldsOnly(((NetSuiteInputProperties) properties).bodyFieldsOnly.getValue());
+            }
             connectionConfig.setCustomizationEnabled(customizationEnabled);
             return connectionConfig;
         } catch (MalformedURLException e) {
@@ -206,7 +208,7 @@ public class NetSuiteEndpoint {
         private URL endpointUrl;
         private NetSuiteVersion apiVersion;
         private NetSuiteCredentials credentials;
-        private boolean bodyFieldsOnly;
+        private boolean bodyFieldsOnly = true;
         private boolean customizationEnabled;
 
         public ConnectionConfig() {
