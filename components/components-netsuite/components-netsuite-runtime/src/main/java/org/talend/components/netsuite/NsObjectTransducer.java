@@ -439,6 +439,8 @@ public abstract class NsObjectTransducer {
             valueClass = XMLGregorianCalendar.class;
             break;
         case SELECT:
+            valueClass = getPicklistClass();
+            break;
         case MULTI_SELECT:
         default:
             valueClass = null;
@@ -471,6 +473,21 @@ public abstract class NsObjectTransducer {
             converter = new NullConverter(valueClass, null);
         }
         return converter;
+    }
+    
+    public Class<?> getPicklistClass(){
+        Class<?> valueClass;
+        try {
+            valueClass = Class.forName("com.netsuite.webservices.v2016_2.platform.core.ListOrRecordRef");
+        } catch (ClassNotFoundException e) {
+            try {
+                valueClass = Class.forName("com.netsuite.webservices.v2014_2.platform.core.ListOrRecordRef");
+            } catch (ClassNotFoundException e1) {
+                return null;
+                //ignore
+            }
+        }
+        return valueClass;
     }
 
     /**
