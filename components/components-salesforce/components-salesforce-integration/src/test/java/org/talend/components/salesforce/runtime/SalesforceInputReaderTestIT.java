@@ -416,7 +416,7 @@ public class SalesforceInputReaderTestIT extends SalesforceTestBase {
         props.manualQuery.setValue(true);
         // Manual query with foreign key
         // Need to specify where clause to be sure that this record exists and has parent-to-child relation.
-        props.query.setValue("Select Id, Name,(Select Contact.Id,Contact.Name from Account.Contacts) from Account Limit 1");
+        props.query.setValue("Select Id, Name,(Select Contact.Id,Contact.Name from Account.Contacts) from Account WHERE Name = 'United Oil & Gas, UK' Limit 1");
         props.validateGuessSchema();
         List<IndexedRecord> rows = readRows(props);
 
