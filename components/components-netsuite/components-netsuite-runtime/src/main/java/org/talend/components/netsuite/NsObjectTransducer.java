@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -475,19 +476,22 @@ public abstract class NsObjectTransducer {
         return converter;
     }
     
+    protected abstract String getApiVersion();
+    
     public Class<?> getPicklistClass(){
-        Class<?> valueClass;
-        try {
-            valueClass = Class.forName("com.netsuite.webservices.v2016_2.platform.core.ListOrRecordRef");
-        } catch (ClassNotFoundException e) {
+        String version = getApiVersion();
+        String pattern = "20\\d{2}\\.\\d+";
+        if(version != null && Pattern.matches(pattern, version)){
+            Class<?> valueClass;
             try {
-                valueClass = Class.forName("com.netsuite.webservices.v2014_2.platform.core.ListOrRecordRef");
-            } catch (ClassNotFoundException e1) {
+                valueClass = Class.forName("com.netsuite.webservices.v"+version.replace('.', '_')+".platform.core.ListOrRecordRef");
+            } catch (ClassNotFoundException e) {
                 return null;
                 //ignore
             }
+            return valueClass;
         }
-        return valueClass;
+        return null;
     }
 
     /**
