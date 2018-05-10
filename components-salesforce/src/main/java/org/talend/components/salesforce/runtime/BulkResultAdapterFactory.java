@@ -27,6 +27,8 @@ public class BulkResultAdapterFactory implements IndexedRecordConverter<BulkResu
 
     private String names[];
 
+    private boolean returnNullForEmpty;
+
     /** The cached AvroConverter objects for the fields of this record. */
     @SuppressWarnings("rawtypes")
     protected transient AvroConverter[] fieldConverter;
@@ -54,6 +56,8 @@ public class BulkResultAdapterFactory implements IndexedRecordConverter<BulkResu
     @Override
     public void setSchema(Schema schema) {
         this.schema = schema;
+        Object propValue = schema.getObjectProp(SalesforceSchemaConstants.RETURN_NULL_FOR_EMPTY);
+        this.returnNullForEmpty = (propValue == null) ? false : (Boolean) propValue;
     }
 
     private class ResultIndexedRecord implements IndexedRecord {
@@ -82,7 +86,11 @@ public class BulkResultAdapterFactory implements IndexedRecordConverter<BulkResu
                     fieldConverter[j] = SalesforceAvroRegistry.get().getConverterFromString(f);
                 }
             }
-            return fieldConverter[i].convertToAvro(value.getValue(names[i]));
+            Object resultValue = value.getValue(names[i]);
+            if (returnNullForEmpty && resultValue != null && "".equals(resultValue)) {
+                resultValue = null;
+            }
+            return fieldConverter[i].convertToAvro(resultValue);
         }
 
         @Override

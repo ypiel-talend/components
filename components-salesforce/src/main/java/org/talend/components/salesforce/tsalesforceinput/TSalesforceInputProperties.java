@@ -52,6 +52,8 @@ public class TSalesforceInputProperties extends SalesforceConnectionModuleProper
 
     public Property<String> columnNameDelimiter = newProperty("columnNameDelimiter"); //$NON-NLS-1$
 
+    public Property<Boolean> returnNullValue = newBoolean("returnNullValue", false);
+
     public TSalesforceInputProperties(@JsonProperty("name") String name) {
         super(name);
     }
@@ -77,6 +79,7 @@ public class TSalesforceInputProperties extends SalesforceConnectionModuleProper
         mainForm.addRow(includeDeleted);
 
         Form advancedForm = getForm(Form.ADVANCED);
+        advancedForm.addRow(returnNullValue);
         advancedForm.addRow(batchSize);
         advancedForm.addRow(normalizeDelimiter);
         advancedForm.addRow(columnNameDelimiter);
@@ -103,6 +106,7 @@ public class TSalesforceInputProperties extends SalesforceConnectionModuleProper
         }
         if (Form.ADVANCED.equals(form.getName())) {
             boolean isBulkQuery = queryMode.getValue().equals(QueryMode.Bulk);
+            form.getWidget(returnNullValue.getName()).setVisible(isBulkQuery);
             form.getWidget(normalizeDelimiter.getName()).setHidden(isBulkQuery);
             form.getWidget(columnNameDelimiter.getName()).setHidden(isBulkQuery);
             form.getWidget(batchSize.getName()).setHidden(isBulkQuery);
