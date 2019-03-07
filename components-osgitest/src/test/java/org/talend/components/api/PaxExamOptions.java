@@ -46,7 +46,9 @@ public class PaxExamOptions {
 
     public static Option[] getOptions() {
         return options(mavenBundle("org.apache.felix", "org.apache.felix.scr"), //
-
+                // following 2 bundles are dependencies of "org.apache.felix.scr"
+                mavenBundle( "org.osgi", "org.osgi.util.promise"), //
+                mavenBundle( "org.osgi", "org.osgi.util.function"), //
                 mavenBundle("org.slf4j", "slf4j-api"), //
                 mavenBundle("org.slf4j", "log4j-over-slf4j").noStart(), mavenBundle("commons-lang", "commons-lang", "2.4"), //
                 mavenBundle().groupId("com.fasterxml.jackson.core").artifactId("jackson-annotations"), //
