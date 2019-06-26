@@ -5,7 +5,7 @@
 	<groupId>org.talend.components</groupId>
 	<artifactId>components-parent</artifactId>
 	<packaging>pom</packaging>
-	<version>0.17.2</version>
+	<version>0.17.3-SNAPSHOT</version>
 
 	<name>Component Parent POM</name>
 	<properties>
@@ -413,7 +413,7 @@
 							<dependency>
 								<groupId>org.talend.components</groupId>
 								<artifactId>components-p2update-assembly</artifactId>
-                                <version>0.17.2</version>								
+                                <version>0.17.3-SNAPSHOT</version>								
 							</dependency>
 						</dependencies>
 						<executions>

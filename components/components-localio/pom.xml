@@ -4,7 +4,7 @@
 
     <groupId>org.talend.components</groupId>
     <artifactId>components-localio-aggregator</artifactId>
-    <version>0.17.2</version>
+    <version>0.17.3-SNAPSHOT</version>
 
     <name>Components - Local IO Aggregator</name>
     <packaging>pom</packaging>
