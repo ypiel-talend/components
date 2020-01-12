@@ -111,3 +111,5 @@ From your Talend DataPreparation installation directory (such as `Talend-6.4.1/d
 The following files are installed by this patch:
 
 - dataprep/services/tcomp/.m2/org/talend/components/components-jdbc-runtime/0.19.7/components-jdbc-runtime-0.19.7.jar
+- dataprep/services/tcomp/.m2/org/talend/components/components-jdbc-runtime/0.19.7/components-jdbc-runtime-0.19.7-bundle.jar
+- dataprep/services/tcomp/.m2/org/talend/components/components-jdbc-runtime/0.19.7/components-jdbc-runtime-0.19.7-sources.jar
