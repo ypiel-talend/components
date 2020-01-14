@@ -10,8 +10,8 @@ product:
 
 | Info             | Value |
 | ---------------- | ---------------- |
-| Patch Name       | Patch\_20200108\_TPS-3638\_v1-6.4.1 |
-| Release Date     | 2020-01-08 |
+| Patch Name       | Patch\_20200114\_TPS-3638\_v2-6.4.1 |
+| Release Date     | 2020-01-14 |
 | Target Version   | 6.4.1 |
 | Product affected | Talend Data Preparation |
 
