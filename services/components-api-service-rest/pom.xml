@@ -583,7 +583,7 @@
                                                 <env>
                                                     <LOG_PATH>/maven/logs</LOG_PATH>
                                                     <FILEBEAT_CONSOLE_OUTPUT>false</FILEBEAT_CONSOLE_OUTPUT>
-                                                    <PAX_MVN_REPO>https://artifacts-oss.talend.com/nexus/content/repositories/TalendOpenSourceSnapshot/@snapshots@id=talend,https://repo.maven.apache.org/maven2@id=maven</PAX_MVN_REPO>
+                                                    <PAX_MVN_REPO>https://artifacts-oss.talend.com/nexus/content/repositories/TalendOpenSourceRelease/@id=talend,https://repo.maven.apache.org/maven2@id=maven</PAX_MVN_REPO>
                                                 </env>
                                                 <labels>
                                                     <name>Talend Component REST API</name>
