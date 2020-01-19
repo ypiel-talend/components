@@ -41,8 +41,8 @@ fi
 APP_CLASS="org.talend.components.service.rest.Application"
 
 
-PAX_PREFIX="org.ops4j.pax.url.mvn"
-export JAVA_OPTS="${JAVA_OPTS} -Dorg.ops4j.pax.url.mvn.useFallbackRepositories=false -Dorg.ops4j.pax.url.mvn.repositories=https://repo.maven.apache.org@id=maven"
+#PAX_PREFIX="org.ops4j.pax.url.mvn"
+#export JAVA_OPTS="${JAVA_OPTS} -Dorg.ops4j.pax.url.mvn.useFallbackRepositories=false -Dorg.ops4j.pax.url.mvn.repositories=https://artifacts-oss.talend.com/nexus/content/repositories/TalendOpenSourceRelease/@id=talend,https://repo.maven.apache.org@id=maven"
 SCRIPT_JAVA_OPTS=" -Dfile.encoding=UTF-8 -Dorg.ops4j.pax.url.mvn.localRepository=\"$PWD/.m2\" -Dorg.ops4j.pax.url.mvn.settings=\"$PWD/config/settings.xml\" -Dcomponent.default.config.folder=\"$PWD/config/default\" $JAVA_OPTS "
 
 # If HADOOP_CONF_DIR is not set, try to get it from in the application properties, then add it to the classpath.
