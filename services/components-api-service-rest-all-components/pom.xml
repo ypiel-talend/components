@@ -374,7 +374,6 @@
                                                 <!-- add filebeat log variable -->
                                                 <env>
                                                     <LOG_PATH>/maven/logs</LOG_PATH>
-                                                    <PAX_MVN_REPO>https://artifacts-oss.talend.com/nexus/content/repositories/TalendOpenSourceRelease/@id=talend,https://repo.maven.apache.org/maven2@id=maven</PAX_MVN_REPO>
                                                 </env>
                                                 <labels>
                                                     <name>Talend Component REST API packaged with all components</name>
