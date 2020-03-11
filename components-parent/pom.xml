@@ -45,6 +45,8 @@
         <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
         <maven-surefire-plugin.version>3.0.0-M3</maven-surefire-plugin.version>
         <cxf.version>3.3.4</cxf.version>
+        <timestamp.year>${maven.build.timestamp}</timestamp.year>
+        <maven.build.timestamp.format>yyyy</maven.build.timestamp.format>
         <spotless.version>1.24.0</spotless.version>
     </properties>
 
@@ -203,7 +205,7 @@
                         <encoding>UTF-8</encoding>
                         <licenseHeader>
                             <content><![CDATA[/*
- * Copyright (C) 2006-2020 Talend Inc. - www.talend.com
+ * Copyright (C) 2006-${timestamp.year} Talend Inc. - www.talend.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
