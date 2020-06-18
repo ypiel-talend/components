@@ -15,17 +15,36 @@ help(){
   echo "* Checkout commit from which relese should be done before launching this script"
   echo
   echo "Options:"
-  echo "-h, --help    display this help and exit"
-  echo "-b, --bump    bumps version of specified module. Requires 3 parameters:"
-  echo "                1: module name (for commit message only)"
-  echo "                2: previous version"
-  echo "                3: new version"
-  echo "              example: ./release.sh --bump daikon 0.31.11-SNAPSHOT 0.31.11"
-  echo "-m            to be used only when script is launched from master branch;"
-  echo "                additionally creates maintenance branch and bumps version"
-  echo "                on master branch"
+  echo "-h, --help          Display this help and exit"
+  echo "-b, --bump          Bumps version of specified module. Requires 3 parameters:"
+  echo "                      1: module name (for commit message only)"
+  echo "                      2: previous version"
+  echo "                      3: new version"
+  echo "                    example: ./release.sh --bump daikon 0.31.11-SNAPSHOT 0.31.11"
+  echo "-B, --batch         Run in non-interactive (batch) mode"
+  echo "-c, --custom        Allows to set custom versions for Component and Daikon"
+  echo "-m, --master        Additionally bump version on master and create"
+  echo "                    maintenance branch (use it together with -p)"
 
-  exit 0
+  echo "-p, --pr            Specify that bump commits will be merged via pull requests."
+  echo "                    It is recommended to use this option, when -m is used"
+  echo "-s, --step {1-9}    Resumes/starts the script from specified step"
+  echo
+  echo "Release steps:"
+  echo "1. Ensure you're on correct branch (master or maintenance), pull the branch"
+  echo "2. If release starts from master branch, then:"
+  echo "    2.1. Create maintenance branch"
+  echo "    2.2. Bump version on master branch to next development Version"
+  echo "    2.3. Checkout on maintenance branch"
+  echo "    2.4. Push maintenance branch"
+  echo "(else skip step 2)"
+  echo "3. Check Daikon version, bump if needed"
+  echo "4. Bump Components version to release version on maintenance branch and push"
+  echo "5. Ensure CI build started (start it manually if needed)"
+  echo "6. After successful CI build create and push release tag"
+  echo "7. Bump Components version to post release version on maintenance branch and push"
+  echo "8. Post message to release channel in slack"
+  echo "9. Bump tcomp version in Studio "
 }
 
 ###
@@ -46,12 +65,24 @@ ARTIFACT_VERSION_REGEXP="[0-9]+\.[0-9]+\.[0-9]+(-SNAPSHOT)?"
 CI_SERVER="https://ci-common.datapwn.com/view/Components/"
 
 # Component repository URL
+REPOSITORY=https://github.com/Talend/components/
 # Fork Component repository and change original URL with forked to test this script
 # REPOSITORY=https://github.com/gonchar-ivan/components/
-REPOSITORY=https://github.com/Talend/components/
 
 # Component reposiroty directory on user's local machine
 REPO_DIR=$PWD
+
+# Blue color escape code
+BLUE="\033[1;34m"
+
+# Green color escape code
+GREEN="\033[0;32m"
+
+# Red color escape code
+RED="\033[0;31m"
+
+# No color code
+NC="\033[0m"
 
 ###
 # Global variables--------------------------------------------------------------
@@ -84,6 +115,20 @@ current_branch=""
 # temporary branch name
 temp_branch=""
 
+# step number variale. But default the script starts from step 0 (the beginning)
+step="0"
+
+# "boolean" variable which specifies if the script should run in batch mode
+batch="false"
+
+# "boolean" variable which specifies if the script will ask custom versions
+# for Component and Daikon
+custom="false"
+
+# "boolean" variable which specifies if bump commits will be merged via pull
+# requests on github
+pr="false"
+
 ###
 # Functions---------------------------------------------------------------------
 ###
@@ -93,14 +138,14 @@ temp_branch=""
 # doesn't accept parameters
 ##
 checkAnswer(){
-  echo
-  echo -n "Press Ctrl+C to quit. Press Enter to continue...    "
-  read ANS
-  if [ "$ANS" != "" ]; then
-    echo "Exiting"
-    exit 0
+  if [ "$batch" = "false" ]; then
+    echo -e "${BLUE}Continue? (Y/n)...${NC}    "
+    read ANS
+    if [ "$ANS" != "y" ] && [ "$ANS" != "Y" ] && [ "$ANS" != "" ]; then
+      echo -e "${GREEN}Exit${NC}"
+      exit 0
+    fi
   fi
-  echo
 }
 
 ##
@@ -111,16 +156,16 @@ checkAnswer(){
 ##
 validateVersion(){
   if [[ ! $1 =~ $ARTIFACT_VERSION_REGEXP ]]; then
-    echo "Incorrect maven version: ${1} Version should correspond to following regexp ${ARTIFACT_VERSION_REGEXP}"
-    echo "Exiting"
+    echo -e "${RED}error:${NC} incorrect maven version: ${1} Version should correspond to following regexp ${ARTIFACT_VERSION_REGEXP}"
+    echo -e "${RED}Exit${NC}"
     exit 2
   fi
 }
 
 welcome(){
   echo
-  echo "Welcome to TCOMP release script!"
-  echo "You are going to release Components from $REPOSITORY repository"
+  echo -e "${BLUE}TCOMPv0 release script${NC}"
+  echo "Repository = $REPOSITORY"
   echo
 }
 
@@ -131,45 +176,11 @@ welcome(){
 ##
 checkCommit(){
   current_branch=`git rev-parse --abbrev-ref HEAD`
-  echo "Before starting release make sure you checkout correct branch and commit"
-  echo "Branch: $current_branch"
-  echo "Commit: `git log -1 --pretty=%B`"
-  echo
-  echo "Make sure you executed following command to get latest commits"
-  echo
-  echo "git pull origin ${current_branch}"
+  echo "Branch = $current_branch"
+  echo "Commit = `git log -1 --pretty=%B`"
+  echo "Pull latest commits using following command if needed" -> /dev/null
+  echo "git pull origin ${current_branch}" -> /dev/null
   checkAnswer
-}
-
-##
-# compute current (pre release) version, release version and next (post release) version
-# uses 3 global variables:
-# $pre_release_version
-# $release_version
-# $post_release_version
-##
-computeVersions(){
-  pre_release_version=`grep "$COMPONENT_VERSION_PROPERTY" components-parent/pom.xml | grep -o -E "$ARTIFACT_VERSION_REGEXP"`
-  release_version=${pre_release_version%"-SNAPSHOT"}
-  # maven version consists of 3 numbers: major (API) version, minor (feature) and patch (bugfix)
-  # if release_version = 0.28.5, then major version = 0
-  major_version=`echo ${release_version} | cut -d "." -f "1"`
-  # if release_version = 0.28.5, then major version = 28
-  minor_version=`echo ${release_version} | cut -d "." -f "2"`
-  # if release_version = 0.28.5, then patch version = 5
-  patch_version=`echo ${release_version} | cut -d "." -f "3"`
-  new_patch_version=`expr $patch_version + 1`
-  post_release_version="${major_version}.${minor_version}.${new_patch_version}-SNAPSHOT"
-
-  echo "Component pre release version is $pre_release_version"
-  echo "Component release version will be $release_version"
-  echo "Component post release version will be $post_release_version"
-  if [ $master_release = "true" ]; then
-    new_minor_version=`expr $minor_version + 1`
-    new_master_version="${major_version}.${new_minor_version}.0-SNAPSHOT"
-    echo "Component master version will be $new_master_version"
-  fi
-  echo
 }
 
 ##
@@ -179,8 +190,7 @@ computeVersions(){
 ##
 checkoutTempBranch(){
   temp_branch=temp/bump/${1}
-  git checkout -b $temp_branch
-  echo
+  git checkout -b $temp_branch > /dev/null
 }
 
 ##
@@ -194,7 +204,6 @@ checkoutTempBranch(){
 changeVersion(){
   find $REPO_DIR -name 'archetype.properties' -exec sed -i "s/${1}/${2}/g" {} \;
   find $REPO_DIR -name 'pom.xml' -exec sed -i "s/${1}/${2}/g" {} \;
-  echo
 }
 
 ##
@@ -205,8 +214,7 @@ changeVersion(){
 ##
 commitVersion(){
   git add .
-  git commit -m "chore: bump ${1} version to ${2}"
-  echo
+  git commit -m "chore: bump ${1} version to ${2}" > /dev/null
 }
 
 ##
@@ -214,8 +222,7 @@ commitVersion(){
 # uses $temp_branch global variable as parameter
 ##
 pushTempBranch(){
-  git push origin $temp_branch
-  echo
+  git push -q origin $temp_branch
 }
 
 ##
@@ -225,8 +232,11 @@ pushTempBranch(){
 # also uses $REPOSITORY constant
 ##
 reviewBump(){
-  echo "Please review bump commit with the following link"
-  echo "${REPOSITORY}compare/${current_branch}...${temp_branch}?expand=1"
+  if [ "$pr" = "true" ]; then
+    echo -e "${BLUE}Create PR and continue after merge:${NC} ${REPOSITORY}compare/${current_branch}...${temp_branch}?expand=1"
+  else
+    echo -e "${BLUE}Review:${NC} ${REPOSITORY}compare/${current_branch}...${temp_branch}?expand=1"
+  fi
   checkAnswer
 }
 
@@ -238,16 +248,16 @@ reviewBump(){
 # $temp_branch
 ##
 pushBump(){
-  git checkout $current_branch
-  echo
-  git merge $temp_branch
-  echo
-  git push origin $current_branch
-  echo
+  git checkout $current_branch > /dev/null
+  if [ "$pr" = "true" ]; then
+    git pull -q origin $current_branch > /dev/null
+  else
+    git merge $temp_branch > /dev/null
+    git push -q origin $current_branch > /dev/null
+  fi
   # remove temp branch from github
   git branch -D $temp_branch
   git push origin --delete $temp_branch
-  echo
 }
 
 ##
@@ -260,10 +270,13 @@ pushBump(){
 bumpVersion(){
   # validate parameters
   if [ "$#" -ne 3 ]; then
-    echo "Illegal number of parameters. Should be 3: module to bump; previous version; new version"
-    echo "Exiting"
+    echo -e "${RED}error:${NC} illegal number of parameters. Should be 3: module to bump; previous version; new version"
+    echo -e "${RED}exit${NC}"
     exit 1
   fi
+
+  current_branch=`git rev-parse --abbrev-ref HEAD`
+
   validateVersion "$2"
   validateVersion "$3"
 
@@ -271,12 +284,35 @@ bumpVersion(){
   changeVersion "$2" "$3"
   commitVersion "$1" "$3"
   pushTempBranch
-  echo "(*) Review bump commit $3"
-  echo
   reviewBump
-  echo "(*) Push bump commit $3"
-  echo
   pushBump
+}
+
+##
+# computes current version and prints it
+# uses 2 constants:
+# $COMPONENT_VERSION_PROPERTY
+# $ARTIFACT_VERSION_REGEXP
+##
+currentVersion(){
+  current_version=`grep "$COMPONENT_VERSION_PROPERTY" components-parent/pom.xml | grep -o -E "$ARTIFACT_VERSION_REGEXP"`
+  echo "$current_version"
+}
+
+##
+# Recomputes major, minor and patch parts of maven version
+# based on input version $1
+# accepts 1 parameter:
+# $1 - version to be splitted on parts
+##
+recomputeMajorMinorPatch(){
+  version=${1%"-SNAPSHOT"}
+  # if $version = 0.28.5, then major version = 0
+  major_version=`echo ${version} | cut -d "." -f "1"`
+  # if $version = 0.28.5, then major version = 28
+  minor_version=`echo ${version} | cut -d "." -f "2"`
+  # if $version = 0.28.5, then patch version = 5
+  patch_version=`echo ${version} | cut -d "." -f "3"`
 }
 
 ##
@@ -285,19 +321,23 @@ bumpVersion(){
 # $release_version
 ##
 pushTag(){
-  # ensure release build was successful
-  echo "Please wait until release build is finished successfully"
-  echo "If the build failed, quit this script, fix a problem and restart build"
+  echo "Check that CI build finished successfully"
+  echo "${CI_SERVER}"
   checkAnswer
+
+  release_version=$(currentVersion)
+  if [[ $release_version == *'-SNAPSHOT' ]]; then
+    echo "Cannot create tag from SNAPSHOT: $release_version"
+    exit 3
+  fi
 
   # at this point HEAD should be on release commit
   # create and push tag
   git tag release/${release_version}
-  git push origin release/${release_version}
-  echo
+  git push -q origin release/${release_version}
 
-  # create release notes on github
-  echo "Please create release notes on github using following link"
+  echo "Create release notes on github"
+  echo "git log --pretty=oneline | cut -d \" \" -f2- | head -20"
   echo "${REPOSITORY}releases/new?tag=release%2F${release_version}"
   checkAnswer
 }
@@ -313,135 +353,203 @@ pushTag(){
 # $current_branch
 ##
 createMaintenanceAndBumpMaster(){
-  ### Create maintenance branch
-  maintenance_branch="maintenance/${major_version}.${minor_version}"
-  echo "(*) Create ${maintenance_branch} branch"
-  git branch ${maintenance_branch}
-  created_branch=`git branch --list | grep ${maintenance_branch}`
-  # validate created branch
-  if [ -z "$created_branch" ]; then
-    echo "${maintenance_branch} branch wasn't created for some reason"
-  else
-    echo "created branch ${created_branch}"
+  # compute versions
+  master_version=$(currentVersion)
+  recomputeMajorMinorPatch $master_version
+  new_minor_version=`expr $minor_version + 1`
+  new_master_version="${major_version}.${new_minor_version}.0-SNAPSHOT"
+
+  echo "Master version = $master_version"
+  if [ "$batch" = "false" ] && [ "$custom" = "true" ]; then
+    echo -e "${BLUE}Specify new master version:${NC}:  [${new_master_version}]"
+    read ANS
+    if [ "$ANS" != "y" ] && [ "$ANS" != "Y" ] && [ "$ANS" != "" ]; then
+      validateVersion $ANS
+      new_master_version=$ANS
+    fi
   fi
-  echo
+  echo "New master version = $new_master_version"
 
-  ### Bump version on master_release
-  echo "(*) Bump Components version on master branch"
-  echo
-  bumpVersion "Components" "$pre_release_version" "$new_master_version"
+  maintenance_branch="maintenance/${major_version}.${minor_version}"
+  echo -e " --- [2.1] ${GREEN}Create ${maintenance_branch} branch${NC} ---"
+  git branch ${maintenance_branch} > /dev/null
 
-  ### Checkout on maintenance branch
-  echo "(*) Checkout ${maintenance_branch} branch"
+  echo -e " --- [2.2] ${GREEN}Bump version on master from ${master_version} to ${new_master_version}${NC} ---"
+  bumpVersion "Components" "$master_version" "$new_master_version"
+
+  echo -e " --- [2.3] ${GREEN}Checkout on ${maintenance_branch} branch${NC} ---"
   git checkout ${maintenance_branch}
-  echo
-  current_branch=${maintenance_branch}
 
-  ### Push maintenance branch
-  git push origin ${maintenance_branch}
+  echo -e " --- [2.4] ${GREEN}Push ${maintenance_branch} branch${NC} ---"
+  git push -q origin ${maintenance_branch} > /dev/null
 }
 
 ##
 # prints Daikon version and bumpes it if user types new version
+# it is assumed all other dependencies were already updated
 ##
 checkDaikonVersion(){
-  echo "It is assumed all other dependencies were already updated"
   daikon_version=`grep "$DAIKON_VERSION_PROPERTY" components-parent/pom.xml | grep -o -E "$ARTIFACT_VERSION_REGEXP"`
-  echo "Daikon version to be used is $daikon_version"
-  echo "Press Enter to continue..."
-  echo -n "  or input Daikon version to be used in the form of x.y.z...    "
-  read ANS
-  if [ "$ANS" != "" ]; then
-    daikon_prev_version=$daikon_version
-    daikon_version=$ANS
-    echo "Changing daikon version to $daikon_version"
-    bumpVersion "Daikon" "$daikon_prev_version" "$daikon_version"
+  echo "Daikon version = $daikon_version"
+
+  if [ "$batch" = "false" ] && [ "$custom" = "true" ]; then
+    echo -e "${BLUE}Specify new Daikon version:${NC}  [${daikon_version}]"
+    read ANS
+    if [ "$ANS" != "y" ] && [ "$ANS" != "Y" ] && [ "$ANS" != "" ]; then
+      daikon_prev_version=$daikon_version
+      daikon_version=$ANS
+      echo "New Daikon version = $daikon_version"
+      bumpVersion "Daikon" "$daikon_prev_version" "$daikon_version"
+    fi
   fi
-  echo
 }
 
 ###
 # Main script-------------------------------------------------------------------
 ###
 
-### Parse options
-option=$1
-case $option in
-  # if no option then do nothing and launch release
-  "")
-  ;;
-  "-h"|"--help")
-  help
-  ;;
-  "-b"|"--bump")
-  bumpVersion $2 $3 $4
-  exit 0
-  ;;
-  "-m")
-  # sets flag that release starts from master and maintenance branch should be created
-  master_release=true
-  ;;
-  *)
-  echo "Unrecognized option: $option"
-  echo "Launching --help"
-  help
-  ;;
-esac
+# Parse options
+while [[ $# -gt 0 ]]
+do
+  option="$1"
+  case $option in
+    # if no option then do nothing and launch release
+    "")
+    ;;
+    "-h"|"--help")
+    help
+    exit 0
+    ;;
+    "-b"|"--bump")
+    bumpVersion $2 $3 $4
+    exit 0
+    ;;
+    "-B"|"--batch")
+    batch="true"
+    shift # pass -B option
+    ;;
+    "-c"|"--custom")
+    custom="true"
+    shift # pass -c option
+    ;;
+    "-m"|"--master")
+    # sets flag that release starts from master and maintenance branch should be created
+    master_release="true"
+    shift # pass -m option
+    ;;
+    "-p"|"--pr")
+    pr="true"
+    shift # pass -p option
+    ;;
+    "-s"|"--step")
+    step="$2"
+    shift # pass -s option
+    shift # pass opton value
+    ;;
+    *)
+    echo "Unrecognized option: $option"
+    echo "Launching --help"
+    help
+    exit 0
+    ;;
+  esac
+done
 
 welcome
 
-### Ask to recheck if checkout was done on correct commit
-echo "(*) Checkout correct commit"
-echo
-checkCommit
-computeVersions
-
-if [ $master_release = "true" ]; then
-  createMaintenanceAndBumpMaster
+if [ "${step}" -le "1" ]; then
+  echo -e " --- [1] ${GREEN}Check branch and commit${NC} ---"
+  checkCommit
 fi
 
-### Check (and bump) Daikon version
-echo "(*) Check Daikon version"
-echo
-checkDaikonVersion
+if [ "${step}" -le "2" ]; then
+  if [ $master_release = "true" ]; then
+    echo -e " --- [2] ${GREEN}Release from master${NC} ---"
+    createMaintenanceAndBumpMaster
+  else
+    echo -e " --- [2] ${GREEN}Skip release from master${NC} ---"
+  fi
+fi
 
-### Bump Components version to release
-echo "(*) Bump Components version to release version"
-echo
-bumpVersion "Components" "$pre_release_version" "$release_version"
-# ensure CI build started
-echo "Please ensure release build started (or start it manually) on ${CI_SERVER}"
-checkAnswer
+if [ "${step}" -le "3" ]; then
+  echo -e " --- [3] ${GREEN}Check Daikon version${NC} ---"
+  checkDaikonVersion
+fi
 
-### Push release tag
-echo "(*) Push release tag"
-echo
-pushTag
+if [ "${step}" -le "4" ]; then
+  pre_release_version=$(currentVersion)
+  release_version=${pre_release_version%"-SNAPSHOT"}
 
-### Bump Component version to post release version
-echo "(*) Bump Component version to post release version"
-echo
-bumpVersion "Components" "$release_version" "$post_release_version"
-# ensure CI build started
-echo "(Optionally) Please ensure CI build started (or start it manually) on ${CI_SERVER}"
-checkAnswer
+  echo -e " --- [4] ${GREEN}Bump Components version to release ${release_version}${NC} ---"
+  echo "Pre-release version = $pre_release_version"
 
-### Publish message in slack channels
-echo "(*) Post message in slack"
-echo
-echo "Please post following message in di-releases (and optionally to #eng-releases) slack channels"
-echo "\`tcompV0 ${release_version}\` released"
-echo "SE: (paste link to CI build)"
-echo "EE: (paste link to CI build)"
-echo "Docker: (paste docker link here)"
-checkAnswer
+  if [ "$batch" = "false" ] && [ "$custom" = "true" ]; then
+    echo -e "${BLUE}Specify release version:${NC}:  [${release_version}]"
+    read ANS
+    if [ "$ANS" != "y" ] && [ "$ANS" != "Y" ] && [ "$ANS" != "" ]; then
+      validateVersion $ANS
+      release_version=$ANS
+    fi
+  fi
 
-### Bump tcomp version in Studio
-echo "(*) Bump version in Studio"
-echo
-echo "Please bump tcomp version in Studio"
-echo "Following wiki page https://in.talend.com/15997888 describes how to do it"
-checkAnswer
+  echo "Release version = $release_version"
+  bumpVersion "Components" "$pre_release_version" "$release_version"
+fi
 
-### Script finished
-echo "Release finished"
+if [ "${step}" -le "5" ]; then
+  echo -e " --- [5] ${GREEN}Ensure CI build started${NC} ---"
+  echo "${CI_SERVER}"
+  checkAnswer
+fi
+
+if [ "${step}" -le "6" ]; then
+  echo -e " --- [6] ${GREEN}Push release tag${NC} ---"
+  pushTag
+fi
+
+if [ "${step}" -le "7" ]; then
+  release_version=$(currentVersion)
+  if [[ $release_version == *'-SNAPSHOT' ]]; then
+    echo "Not a release version: $release_version"
+    exit 3
+  fi
+  recomputeMajorMinorPatch $release_version
+  new_patch_version=`expr $patch_version + 1`
+  post_release_version="${major_version}.${minor_version}.${new_patch_version}-SNAPSHOT"
+
+  if [ "$batch" = "false" ] && [ "$custom" = "true" ]; then
+    echo -e "${BLUE}Specify post release version:${NC}:  [${post_release_version}]"
+    read ANS
+    if [ "$ANS" != "y" ] && [ "$ANS" != "Y" ] && [ "$ANS" != "" ]; then
+      validateVersion $ANS
+      post_release_version=$ANS
+    fi
+  fi
+
+  echo -e " --- [7] ${GREEN}Bump Components version to ${post_release_version}${NC} ---"
+  bumpVersion "Components" "$release_version" "$post_release_version"
+  echo "(Optionally) Ensure ensure CI build started"
+  echo "${CI_SERVER}"
+  checkAnswer
+fi
+
+if [ "${step}" -le "8" ]; then
+  # compute release version from current (post release version)
+  post_release_version=$(currentVersion)
+  recomputeMajorMinorPatch $post_release_version
+  prev_patch_version=`expr $patch_version - 1`
+  release_version="${major_version}.${minor_version}.${prev_patch_version}"
+
+  echo -e " --- [8] ${GREEN}Post message to di-releases (and #eng-releases) channel${NC} ---"
+  echo "tcompV0 ${release_version} released"
+  echo "Docker: (paste docker link here)"
+  checkAnswer
+fi
+
+if [ "${step}" -le "9" ]; then
+  echo -e " --- [9] ${GREEN}Bump tcomp version in Studio${NC} ---"
+  echo "https://in.talend.com/15997888"
+  checkAnswer
+fi
+
+echo -e " --- [10] ${GREEN}Release finished${NC} ---"
