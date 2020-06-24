@@ -340,9 +340,8 @@ pushTag(){
 
   echo "Create release notes on github"
   echo "${REPOSITORY}releases/new?tag=release%2F${release_version}"
-  read -p "Display release note? [y/n]" ans && test "${ans^^}" = "Y" \
-    && echo "git log --format="%s" ${previous_release_tag}..release/${release_version}"; \
-    git log --format="%s" ${previous_release_tag}..release/${release_version}
+  echo "Modify and execute following command to print changelog:"
+  echo "git log --format="%s" ${previous_release_tag}..release/${release_version}"
   checkAnswer
 }
 
