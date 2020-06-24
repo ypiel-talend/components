@@ -336,9 +336,13 @@ pushTag(){
   git tag release/${release_version}
   git push -q origin release/${release_version}
 
+  previous_release_tag=$(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1))
+
   echo "Create release notes on github"
-  echo "git log --pretty=oneline | cut -d \" \" -f2- | head -20"
   echo "${REPOSITORY}releases/new?tag=release%2F${release_version}"
+  read -p "Display release note? [y/n]" ans && test "${ans^^}" = "Y" \
+    && echo "git log --format="%s" ${previous_release_tag}..release/${release_version}"; \
+    git log --format="%s" ${previous_release_tag}..release/${release_version}
   checkAnswer
 }
 
