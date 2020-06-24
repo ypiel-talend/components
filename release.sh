@@ -70,7 +70,8 @@ REPOSITORY=https://github.com/Talend/components/
 # REPOSITORY=https://github.com/gonchar-ivan/components/
 
 # Component reposiroty directory on user's local machine
-REPO_DIR=$PWD
+# Changes directory to a directory where script is located in case script is launched from different directory
+REPO_DIR="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 
 # Blue color escape code
 BLUE="\033[1;34m"
