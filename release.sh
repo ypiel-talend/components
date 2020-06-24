@@ -71,7 +71,7 @@ REPOSITORY=https://github.com/Talend/components/
 
 # Component reposiroty directory on user's local machine
 # Changes directory to a directory where script is located in case script is launched from different directory
-REPO_DIR="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+REPO_DIR="$( cd "$(dirname "$0")" > /dev/null 2>&1 ; pwd -P )"
 
 # Blue color escape code
 BLUE="\033[1;34m"
@@ -179,8 +179,7 @@ checkCommit(){
   current_branch=$(git rev-parse --abbrev-ref HEAD)
   echo "Branch = $current_branch"
   echo "Commit = $(git log -1 --pretty=%B)"
-  echo "Pull latest commits using following command if needed" -> /dev/null
-  echo "git pull origin ${current_branch}" -> /dev/null
+  echo "Pull latest commits with \"git pull origin ${current_branch}\""
   checkAnswer
 }
 
