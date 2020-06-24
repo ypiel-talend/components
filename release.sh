@@ -12,7 +12,7 @@ help(){
   echo "* This script uses git, so it should be installed"
   echo "* Make release.sh file executable. Run \"chmod +x release.sh\" to do it"
   echo "* Launch this script from root directory of components repository"
-  echo "* Checkout commit from which relese should be done before launching this script"
+  echo "* Checkout commit from which release should be done before launching this script"
   echo
   echo "Options:"
   echo "-h, --help          Display this help and exit"
