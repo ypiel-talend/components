@@ -175,9 +175,9 @@ welcome(){
 # $current_branch
 ##
 checkCommit(){
-  current_branch=`git rev-parse --abbrev-ref HEAD`
+  current_branch=$(git rev-parse --abbrev-ref HEAD)
   echo "Branch = $current_branch"
-  echo "Commit = `git log -1 --pretty=%B`"
+  echo "Commit = $(git log -1 --pretty=%B)"
   echo "Pull latest commits using following command if needed" -> /dev/null
   echo "git pull origin ${current_branch}" -> /dev/null
   checkAnswer
@@ -275,7 +275,7 @@ bumpVersion(){
     exit 1
   fi
 
-  current_branch=`git rev-parse --abbrev-ref HEAD`
+  current_branch=$(git rev-parse --abbrev-ref HEAD)
 
   validateVersion "$2"
   validateVersion "$3"
@@ -295,7 +295,7 @@ bumpVersion(){
 # $ARTIFACT_VERSION_REGEXP
 ##
 currentVersion(){
-  current_version=`grep "$COMPONENT_VERSION_PROPERTY" components-parent/pom.xml | grep -o -E "$ARTIFACT_VERSION_REGEXP"`
+  current_version=$(grep "$COMPONENT_VERSION_PROPERTY" components-parent/pom.xml | grep -o -E "$ARTIFACT_VERSION_REGEXP")
   echo "$current_version"
 }
 
@@ -308,11 +308,11 @@ currentVersion(){
 recomputeMajorMinorPatch(){
   version=${1%"-SNAPSHOT"}
   # if $version = 0.28.5, then major version = 0
-  major_version=`echo ${version} | cut -d "." -f "1"`
+  major_version=$(echo ${version} | cut -d "." -f "1")
   # if $version = 0.28.5, then major version = 28
-  minor_version=`echo ${version} | cut -d "." -f "2"`
+  minor_version=$(echo ${version} | cut -d "." -f "2")
   # if $version = 0.28.5, then patch version = 5
-  patch_version=`echo ${version} | cut -d "." -f "3"`
+  patch_version=$(echo ${version} | cut -d "." -f "3")
 }
 
 ##
@@ -356,7 +356,7 @@ createMaintenanceAndBumpMaster(){
   # compute versions
   master_version=$(currentVersion)
   recomputeMajorMinorPatch $master_version
-  new_minor_version=`expr $minor_version + 1`
+  new_minor_version=$(expr $minor_version + 1)
   new_master_version="${major_version}.${new_minor_version}.0-SNAPSHOT"
 
   echo "Master version = $master_version"
@@ -389,7 +389,7 @@ createMaintenanceAndBumpMaster(){
 # it is assumed all other dependencies were already updated
 ##
 checkDaikonVersion(){
-  daikon_version=`grep "$DAIKON_VERSION_PROPERTY" components-parent/pom.xml | grep -o -E "$ARTIFACT_VERSION_REGEXP"`
+  daikon_version=$(grep "$DAIKON_VERSION_PROPERTY" components-parent/pom.xml | grep -o -E "$ARTIFACT_VERSION_REGEXP")
   echo "Daikon version = $daikon_version"
 
   if [ "$batch" = "false" ] && [ "$custom" = "true" ]; then
@@ -514,7 +514,7 @@ if [ "${step}" -le "7" ]; then
     exit 3
   fi
   recomputeMajorMinorPatch $release_version
-  new_patch_version=`expr $patch_version + 1`
+  new_patch_version=$(expr $patch_version + 1)
   post_release_version="${major_version}.${minor_version}.${new_patch_version}-SNAPSHOT"
 
   if [ "$batch" = "false" ] && [ "$custom" = "true" ]; then
@@ -537,7 +537,7 @@ if [ "${step}" -le "8" ]; then
   # compute release version from current (post release version)
   post_release_version=$(currentVersion)
   recomputeMajorMinorPatch $post_release_version
-  prev_patch_version=`expr $patch_version - 1`
+  prev_patch_version=$(expr $patch_version - 1)
   release_version="${major_version}.${minor_version}.${prev_patch_version}"
 
   echo -e " --- [8] ${GREEN}Post message to di-releases (and #eng-releases) channel${NC} ---"
