@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+// A new comment
 public class ConvertAvroTypeToSQL {
 
     private final static Map<Integer, String> SQLTypesMap = new HashMap<>();
